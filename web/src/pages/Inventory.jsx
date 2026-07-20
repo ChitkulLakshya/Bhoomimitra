@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, ChevronDown, Bell, CheckSquare, Square, Clock, Info, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Bell, CheckSquare, Square, Clock, Info, BookOpen, Sparkles } from 'lucide-react';
 import LanguageToggle from '../components/LanguageToggle';
 import AddAlarmModal from '../components/AddAlarmModal';
+import { useSoil } from '../context/SoilContext';
 
 export default function Inventory() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { soilData } = useSoil();
 
   const [expandedId, setExpandedId] = useState(null);
   const [checkedSteps, setCheckedSteps] = useState({});
@@ -154,6 +156,36 @@ export default function Inventory() {
           style={{ width: '100%', maxWidth: '280px', height: 'auto', objectFit: 'contain' }} 
         />
       </div>
+
+      {/* AI Recommendation Banner based on Soil Test */}
+      {soilData && (
+        <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+          <div style={{
+            backgroundColor: '#1E2D17',
+            border: '1.5px solid #5C763A',
+            borderRadius: '24px',
+            padding: '16px 20px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={18} color="#D4E157" />
+              <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#D4E157', letterSpacing: '0.3px' }}>
+                {t('Gemini AI Recommendation for Your Soil')}
+              </span>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: '1.45' }}>
+              {soilData.ph < 6.5
+                ? t('Soil is slightly acidic (pH {{ph}}). Applied 0.5kg Lime treatment step to Eco-Compost routine.', { ph: soilData.ph })
+                : soilData.nitrogen < 50
+                ? t('Soil Nitrogen is low ({{n}} mg/kg). Daily Activity auto-boosted to 3 Eco-Compost sacks.', { n: soilData.nitrogen })
+                : t('Soil Health Score is Optimal (pH {{ph}}, N {{n}} mg/kg). Standard eco-activity plan active.', { ph: soilData.ph, n: soilData.nitrogen })}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Single Grouped Card Container */}
       <div style={{ padding: '0 20px' }}>

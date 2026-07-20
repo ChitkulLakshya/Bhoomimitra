@@ -31,6 +31,17 @@ export default function VerifyReading() {
       const health_score = calculateHealthScore(status);
       const payload = { plot_id: plotId, owner_id: user.id, ...Object.fromEntries(fields.map(([key]) => [key, value(key)])), source: 'card_scan', ocr_confidence: scannedData.confidence || {}, raw_ocr_text: scannedData.raw_text || null, verified: true, verified_at: new Date().toISOString(), rule_set_version: RAGI_RULESET_VERSION, created_at: new Date().toISOString(), tested_on: new Date().toISOString(), status, health_score };
       const readingRef = await addDoc(collection(db, 'readings'), payload);
+      
+      // Also save/update soil_tests for SoilContext & Daily Activity
+      await addDoc(collection(db, 'soil_tests'), {
+        userId: user.id,
+        ph: value('ph') || 6.8,
+        nitrogen: value('nitrogen') || 45,
+        phosphorus: value('phosphorus') || 20,
+        potassium: value('potassium') || 110,
+        testedAt: new Date().toISOString()
+      });
+
       navigate(`/prescription/${plotId}/${readingRef.id}`);
     } catch (error) { alert(`Error saving reading: ${error.message}`); } finally { setSaving(false); }
   };

@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { analyzeCard } from '../utils/ai';
-import { Image as ImageIcon, Camera, ScanLine, X, Zap } from 'lucide-react';
+import { Image as ImageIcon, Camera, ScanLine, X, Zap, ShieldAlert, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../components/LanguageToggle';
 
@@ -18,52 +17,73 @@ export default function ScanCard() {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStage, setScanStage] = useState('');
   const [error, setError] = useState('');
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
 
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // Fetch plots for user
   useEffect(() => {
     const fetchPlots = async () => {
-      const q = query(collection(db, 'plots'), where('owner_id', '==', user.id));
-      const snap = await getDocs(q);
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      if (data.length > 0) setPlotId(data[0].id);
+      if (!user?.id) return;
+      try {
+        const q = query(collection(db, 'plots'), where('owner_id', '==', user.id));
+        const snap = await getDocs(q);
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (data.length > 0) {
+          setPlotId(data[0].id);
+        } else {
+          setPlotId('default_plot');
+        }
+      } catch (err) {
+        console.warn("Plot fetch warning:", err);
+        setPlotId('default_plot');
+      }
     };
 
     fetchPlots();
-  }, [user.id]);
+  }, [user]);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!plotId) {
-      setError(t('Please select a plot first.'));
-      return;
+  // Request & Start Live Camera Stream
+  const startCamera = async () => {
+    setCameraError('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setCameraActive(true);
+      }
+    } catch (err) {
+      console.warn("Camera access warning:", err);
+      setCameraActive(false);
+      setCameraError(t('Camera permission is required for live scanning. You can grant access or select an image file from your device.'));
     }
+  };
 
+  useEffect(() => {
+    startCamera();
+
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  // Process image data (either from live canvas or file input)
+  const processBase64Image = async (base64Data) => {
     setBusy(true);
     setScanProgress(0);
     setScanStage('Initializing Scanner...');
     setError('');
 
     try {
-      const base64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => {
-          const result = reader.result;
-          if (typeof result !== 'string') {
-            reject(new Error('Unable to read the selected image.'));
-            return;
-          }
-
-          resolve(result.split(',')[1]);
-        };
-
-        reader.onerror = () => reject(new Error('Unable to read the selected image.'));
-        reader.readAsDataURL(file);
-      });
-
       const result = await analyzeCard(base64Data, (update) => {
         if (typeof update === 'number') {
           setScanProgress(Math.round(update * 100));
@@ -74,15 +94,16 @@ export default function ScanCard() {
           if (typeof update.progress === 'number') {
             setScanProgress(Math.max(0, Math.min(100, Math.round(update.progress * 100))));
           }
-
           if (update.message) {
             setScanStage(update.message);
           }
         }
       });
 
-      navigate(`/verify/${plotId}`, { state: { scannedData: result } });
-    } catch {
+      const targetPlot = plotId || 'default_plot';
+      navigate(`/verify/${targetPlot}`, { state: { scannedData: result } });
+    } catch (err) {
+      console.error(err);
       setError(t('Failed to analyze the card. Please try again with a clearer photo.'));
     } finally {
       setBusy(false);
@@ -92,8 +113,54 @@ export default function ScanCard() {
     }
   };
 
+  // Capture frame from Live Video Feed
+  const handleCapturePhoto = () => {
+    if (!cameraActive || !videoRef.current || !canvasRef.current) {
+      // Fallback to file picker if camera is not running
+      fileInputRef.current?.click();
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert frame to Base64 (held in-memory temporarily)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const base64Data = dataUrl.split(',')[1];
+
+    processBase64Image(base64Data);
+  };
+
+  // Handle Gallery/File Picker Selection
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const res = reader.result;
+          if (typeof res !== 'string') return reject(new Error('Failed to read image.'));
+          resolve(res.split(',')[1]);
+        };
+        reader.onerror = () => reject(new Error('Failed to read image.'));
+        reader.readAsDataURL(file);
+      });
+
+      processBase64Image(base64Data);
+    } catch (err) {
+      setError(t('Unable to read selected image.'));
+    }
+  };
+
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#1a1a1a', display: 'flex', flexDirection: 'column', zIndex: 9999 }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0D130B', display: 'flex', flexDirection: 'column', zIndex: 9999 }}>
       {/* Hidden File Input */}
       <input
         type="file"
@@ -103,68 +170,133 @@ export default function ScanCard() {
         onChange={handleFileChange}
       />
 
+      {/* Hidden Temporary Canvas for Snapshot */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
       {/* Top Header */}
       <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', color: 'white', zIndex: 10 }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
           <X size={28} />
         </button>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '4px' }}>{t('Scan Item')}</h2>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>
-            {busy ? `${scanStage || t('Scanning')} · ${scanProgress}%` : t('Place item inside the frame')}
-          </p>
-          <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '4px' }}>
-            {t('Offline OCR runs on your device')}
+          <h2 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '4px' }}>{t('Scan Soil Health Card')}</h2>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>
+            {busy ? `${scanStage || t('Scanning')} · ${scanProgress}%` : t('Position card inside the frame')}
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <LanguageToggle />
-          <button style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Zap size={20} />
-          </button>
         </div>
       </div>
 
-      {/* Camera Viewport (Simulated) & Scanner Frame */}
-      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {error && (
-          <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', backgroundColor: 'var(--error)', color: 'white', padding: '12px', borderRadius: '8px', textAlign: 'center', zIndex: 50 }}>
-            {error}
+      {/* Camera Viewport & Live Stream */}
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        
+        {/* Live Video Feed Element */}
+        <video
+          ref={videoRef}
+          playsInline
+          autoPlay
+          muted
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: cameraActive ? 'block' : 'none'
+          }}
+        />
+
+        {/* Camera Permission / Error Banner */}
+        {!cameraActive && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: '#162212',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '32px 24px',
+            textAlign: 'center',
+            color: 'white',
+            zIndex: 5
+          }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <ShieldAlert size={32} color="#D4E157" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>{t('Camera Permission Required')}</h3>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '24px', maxWidth: '320px', lineHeight: '1.4' }}>
+              {cameraError || t('Please allow camera access to scan soil cards directly, or select a file from your device.')}
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={startCamera}
+                style={{
+                  backgroundColor: '#5C763A', color: 'white', border: 'none', borderRadius: '24px',
+                  padding: '12px 20px', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+              >
+                <RefreshCw size={16} />
+                {t('Grant Permission')}
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', borderRadius: '24px',
+                  padding: '12px 20px', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+              >
+                <ImageIcon size={16} />
+                {t('Select Image')}
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Bounding Box Frame */}
+        {error && (
+          <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', backgroundColor: '#D9534F', color: 'white', padding: '14px', borderRadius: '16px', textAlign: 'center', zIndex: 50, fontWeight: '600' }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* Bounding Box Frame Overlay */}
         <div style={{ 
-          width: '280px', 
-          height: '280px', 
-          border: '2px solid rgba(255,255,255,0.8)', 
-          borderRadius: '24px',
-          position: 'relative'
+          width: '300px', 
+          height: '300px', 
+          border: '2px solid rgba(255,255,255,0.6)', 
+          borderRadius: '28px',
+          position: 'relative',
+          zIndex: 10,
+          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)'
         }}>
           {/* Corner accents */}
-          <div style={{ position: 'absolute', top: '-2px', left: '-2px', width: '30px', height: '30px', borderTop: '4px solid white', borderLeft: '4px solid white', borderTopLeftRadius: '24px' }}></div>
-          <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '30px', height: '30px', borderTop: '4px solid white', borderRight: '4px solid white', borderTopRightRadius: '24px' }}></div>
-          <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '30px', height: '30px', borderBottom: '4px solid white', borderLeft: '4px solid white', borderBottomLeftRadius: '24px' }}></div>
-          <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '30px', height: '30px', borderBottom: '4px solid white', borderRight: '4px solid white', borderBottomRightRadius: '24px' }}></div>
+          <div style={{ position: 'absolute', top: '-2px', left: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderTopLeftRadius: '28px' }}></div>
+          <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderTopRightRadius: '28px' }}></div>
+          <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderBottomLeftRadius: '28px' }}></div>
+          <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderBottomRightRadius: '28px' }}></div>
 
           {/* Scanning Animation Line */}
-          {busy && <div style={{ width: '100%', height: '2px', backgroundColor: 'var(--brand-primary)', position: 'absolute', top: '50%', boxShadow: '0 0 10px var(--brand-primary)' }}></div>}
+          {busy && <div style={{ width: '100%', height: '3px', backgroundColor: '#D4E157', position: 'absolute', top: '50%', boxShadow: '0 0 14px #D4E157', animation: 'pulse 1s infinite' }}></div>}
 
           {busy && (
-            <div style={{ position: 'absolute', left: '16px', right: '16px', bottom: '16px', padding: '10px 12px', borderRadius: '12px', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>{scanStage || 'Scanning...'}</div>
+            <div style={{ position: 'absolute', left: '16px', right: '16px', bottom: '16px', padding: '12px 14px', borderRadius: '16px', backgroundColor: 'rgba(0,0,0,0.75)', color: 'white' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '8px' }}>{scanStage || 'Scanning...'}</div>
               <div style={{ height: '6px', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
-                <div style={{ width: `${scanProgress}%`, height: '100%', borderRadius: '999px', backgroundColor: 'var(--brand-primary)', transition: 'width 150ms ease' }}></div>
+                <div style={{ width: `${scanProgress}%`, height: '100%', borderRadius: '999px', backgroundColor: '#D4E157', transition: 'width 200ms ease' }}></div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Floating Bottom Bar */}
+      {/* Floating Bottom Shutter Bar */}
       <div style={{ 
         position: 'absolute',
-        bottom: '32px',
+        bottom: '36px',
         left: '0',
         right: '0',
         padding: '0 40px',
@@ -173,45 +305,48 @@ export default function ScanCard() {
         alignItems: 'center',
         zIndex: 100
       }}>
-        {/* Gallery Upload */}
+        {/* Gallery Upload Button */}
         <button 
-          onClick={() => { fileInputRef.current.removeAttribute('capture'); fileInputRef.current.click(); }} 
+          onClick={() => fileInputRef.current?.click()} 
           disabled={busy}
           style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
         >
           <ImageIcon size={24} />
         </button>
 
-        {/* Big Camera Shutter */}
+        {/* Primary Camera Shutter Button */}
         <button 
-          onClick={() => { fileInputRef.current.setAttribute('capture', 'environment'); fileInputRef.current.click(); }} 
+          onClick={handleCapturePhoto} 
           disabled={busy}
           style={{ 
             background: 'white', 
-            border: '6px solid rgba(255,255,255,0.3)', 
+            border: '6px solid rgba(212, 225, 87, 0.5)', 
             backgroundClip: 'padding-box',
             borderRadius: '50%', 
-            width: '80px', 
-            height: '80px', 
+            width: '84px', 
+            height: '84px', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
-            color: 'var(--text-primary)', 
+            color: '#1C2B14', 
             cursor: 'pointer',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            transition: 'transform 0.15s ease'
           }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <Camera size={32} />
+          <Camera size={36} color="#1C2B14" />
         </button>
 
-        {/* Scan/OCR Mode */}
+        {/* Scan Mode Toggle */}
         <button 
+          onClick={startCamera}
           disabled={busy}
           style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
         >
           <ScanLine size={24} />
         </button>
-
       </div>
     </div>
   );
