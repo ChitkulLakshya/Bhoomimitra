@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, ChevronDown, Bell, CheckSquare, Square, Clock, Info, BookOpen, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Bell, CheckSquare, Square, Clock, Info, BookOpen, Sparkles, Calendar, Scale } from 'lucide-react';
 import LanguageToggle from '../components/LanguageToggle';
 import AddAlarmModal from '../components/AddAlarmModal';
 import { useSoil } from '../context/SoilContext';
@@ -282,6 +282,18 @@ export default function Inventory() {
                           <Clock size={13} color="#D4E157" />
                           <span>Recommended Time: {item.timing}</span>
                         </div>
+                        {item.quantity_per_acre && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                            <Scale size={13} color="#D4E157" />
+                            <span>Quantity: {item.quantity_per_acre}</span>
+                          </div>
+                        )}
+                        {item.duration_days && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                            <Calendar size={13} color="#D4E157" />
+                            <span>Duration: {item.duration_days}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Application Checklist */}

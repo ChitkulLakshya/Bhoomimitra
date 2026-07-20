@@ -24,12 +24,13 @@ export const analyzeCard = async (base64Image, onProgress = null) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              generationConfig: { responseMimeType: "application/json" },
               contents: [
                 {
                   parts: [
                     {
-                      text: `Analyze this Soil Health Card image carefully. Extract all soil health values and generate custom daily activity plans for the farmer based on the soil conditions.
-Return ONLY a raw valid JSON object without markdown formatting:
+                      text: `Analyze this Soil Health Card image carefully. Extract all soil health values exactly. Also generate custom daily activity plans for the farmer based on the soil conditions. Provide exact recommendations on how much fertilizers and manure to use, chemical timing, capacity, quantity, and for how many days.
+Return ONLY a valid JSON object matching this schema:
 {
   "ph": number or null,
   "nitrogen": number or null,
@@ -37,23 +38,24 @@ Return ONLY a raw valid JSON object without markdown formatting:
   "potassium": number or null,
   "organic_carbon": number or null,
   "ec": number or null,
-  "recommendations": ["short actionable advice 1", "short actionable advice 2"],
+  "recommendations": ["short actionable advice 1", "short advice 2"],
   "detailed_daily_activities": [
     {
       "id": "act_1",
-      "name": "Activity Name (e.g. Eco-Compost Boost)",
+      "name": "Activity Name (e.g. Eco-Compost Boost or Urea Application)",
       "summary": "Short dosage summary",
       "img": "/compost_sack.png",
-      "timing": "Recommended timing window",
+      "timing": "Recommended time of day",
+      "quantity_per_acre": "Exact quantity (e.g. 50kg or 2 Liters)",
+      "duration_days": "Number of days or frequency (e.g. 3 Days or Once every 15 days)",
       "dosageDetail": "Detailed instruction and dosage per acre",
       "steps": [
-        { "id": "s1", "label": "Step 1 instruction" },
-        { "id": "s2", "label": "Step 2 instruction" }
+        { "id": "s1", "label": "Step 1 instruction" }
       ],
       "info": {
-        "why": "Why this specific activity is required for this soil condition",
+        "why": "Why this specific activity is required",
         "stageGuide": "Recommended growth stage",
-        "diyRecipe": "DIY natural recipe",
+        "diyRecipe": "DIY recipe or formulation info",
         "precautions": "Important safety or environmental precautions"
       }
     }
@@ -75,9 +77,8 @@ Return ONLY a raw valid JSON object without markdown formatting:
 
         if (response.ok) {
           const data = await response.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const cleanedText = rawText.replace(/```json|```/g, '').trim();
-          const parsed = JSON.parse(cleanedText);
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          const parsed = JSON.parse(rawText);
 
           if (typeof onProgress === 'function') {
             onProgress({ stage: 'complete', progress: 1.0, message: 'Gemini Flash Analysis Complete!' });
