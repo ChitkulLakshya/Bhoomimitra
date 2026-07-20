@@ -2,16 +2,24 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Phone, Lock, ScanLine } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Camera, 
+  ShieldCheck, 
+  CloudSun, 
+  Sparkles, 
+  Leaf,
+  Smartphone
+} from 'lucide-react';
 import LanguageToggle from '../components/LanguageToggle';
 
 export default function AuthPage() {
   const { user, signup } = useAuth();
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const { t } = useTranslation();
 
   if (user) return <Navigate to="/" />;
@@ -28,7 +36,6 @@ export default function AuthPage() {
 
     setLoading(true);
     try {
-      // In this mockup, signup acts as login as well based on AuthContext logic
       await signup(phone, 'Farmer');
     } catch (err) {
       setError(err.message);
@@ -39,110 +46,428 @@ export default function AuthPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-base)',
+      minHeight: '100dvh',
+      width: '100%',
+      backgroundColor: '#F8FAF6',
+      backgroundImage: `
+        radial-gradient(circle at 15% 15%, rgba(84, 110, 63, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(255, 241, 84, 0.12) 0%, transparent 50%)
+      `,
       display: 'flex',
       flexDirection: 'column',
-      padding: '24px',
-      alignItems: 'center'
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      position: 'relative',
+      fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif"
     }}>
-      
-      {/* Top Header */}
-      <div style={{ width: '100%', maxWidth: '400px', display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <LanguageToggle />
+
+      {/* Floating subtle background leaf patterns */}
+      <div style={{ position: 'absolute', top: '40px', left: '24px', opacity: 0.12, pointerEvents: 'none' }}>
+        <Leaf size={48} color="#3B532B" />
+      </div>
+      <div style={{ position: 'absolute', bottom: '60px', right: '28px', opacity: 0.1, transform: 'rotate(45deg)', pointerEvents: 'none' }}>
+        <Leaf size={64} color="#546E3F" />
       </div>
 
-      {/* Main Content Area */}
-      <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* Profile and Greeting */}
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '8px' }}>
-            {t('Hello, Farmer Login 👋')}
-          </h1>
+      {/* Top Header: Brand Title & Language Switcher */}
+      <div style={{
+        width: '100%',
+        maxWidth: '440px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #546E3F, #3B532B)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 10px rgba(84, 110, 63, 0.2)'
+          }}>
+            <Leaf size={20} color="#FFFFFF" />
+          </div>
+          <span style={{ fontSize: '1.15rem', fontWeight: '800', color: '#2C3A20', letterSpacing: '-0.3px' }}>
+            Bhoomi<span style={{ color: '#546E3F' }}>Mitra</span>
+          </span>
         </div>
 
-        {error && <div style={{ color: 'var(--error)', backgroundColor: 'rgba(217, 83, 79, 0.1)', padding: '12px', borderRadius: '12px', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
+        <LanguageToggle style={{ 
+          backgroundColor: '#FFFFFF',
+          color: '#3B532B',
+          border: '1px solid #E2E8DC',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+          borderRadius: '20px',
+          fontWeight: '600',
+          fontSize: '0.82rem'
+        }} />
+      </div>
+
+      {/* Main Login Card (White, Airy, Soft Shadow) */}
+      <div style={{
+        width: '100%',
+        maxWidth: '440px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '32px',
+        padding: '32px 28px',
+        boxShadow: '0 20px 40px rgba(44, 58, 32, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02)',
+        border: '1px solid #EEF3E8',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+        zIndex: 2,
+        transition: 'transform 0.3s ease'
+      }}>
+
+        {/* Farming Hero Illustration Header */}
+        <div style={{
+          width: '100%',
+          height: '140px',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          position: 'relative',
+          marginBottom: '24px',
+          background: 'linear-gradient(180deg, #EBF3E4 0%, #F5F9F0 100%)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-end'
+        }}>
+          {/* Subtle sun element in illustration background */}
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '20%',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 241, 84, 0.5)',
+            filter: 'blur(8px)'
+          }} />
+
+          {/* Clean farmer illustration image */}
+          <img 
+            src="/welcome_farmer.png" 
+            alt="Farming Illustration"
+            style={{
+              height: '150px',
+              objectFit: 'contain',
+              marginBottom: '-10px',
+              filter: 'drop-shadow(0 8px 16px rgba(59, 83, 43, 0.15))'
+            }} 
+          />
+        </div>
+
+        {/* Heading & Subtitle */}
+        <div style={{ textAlign: 'center', marginBottom: '24px', width: '100%' }}>
+          <h1 style={{
+            fontSize: '1.7rem',
+            fontWeight: '800',
+            color: '#1C2615',
+            marginBottom: '6px',
+            letterSpacing: '-0.5px'
+          }}>
+            {t('Hello, Farmer Login 👋')}
+          </h1>
+          <p style={{
+            fontSize: '0.9rem',
+            color: '#667757',
+            lineHeight: '1.45',
+            fontWeight: '500'
+          }}>
+            {t('Welcome Back Subtitle')}
+          </p>
+        </div>
+
+        {/* Error Notification */}
+        {error && (
+          <div style={{
+            width: '100%',
+            backgroundColor: '#FDF2F2',
+            border: '1px solid #F8D7D7',
+            color: '#D9534F',
+            padding: '12px 16px',
+            borderRadius: '16px',
+            fontSize: '0.88rem',
+            fontWeight: '600',
+            textAlign: 'center',
+            marginBottom: '20px'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          <div style={{ position: 'relative' }}>
-            <Phone size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              className="input" 
-              type="tel" 
-              placeholder={t('Phone Number / Username')}
-              value={phone} 
-              onChange={(e) => setPhone(e.target.value)} 
-              required 
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--border-color)',
-                color: 'white',
-                paddingLeft: '48px',
-                borderRadius: '16px'
-              }}
-            />
+          {/* Phone Input Box with +91 Selector */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              color: '#4A5B3B',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            }}>
+              {t('Phone Number')}
+            </label>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#F7FAF4',
+              border: isFocused ? '2px solid #546E3F' : '1.5px solid #E2EAD8',
+              borderRadius: '20px',
+              padding: '6px 16px',
+              transition: 'all 0.2s ease',
+              boxShadow: isFocused ? '0 0 0 4px rgba(84, 110, 63, 0.1)' : 'none'
+            }}>
+              {/* Country Code Pill */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                paddingRight: '12px',
+                borderRight: '1.5px solid #DAE3CE',
+                marginRight: '12px',
+                color: '#2C3A20',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                userSelect: 'none'
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>🇮🇳</span>
+                <span>+91</span>
+              </div>
+
+              {/* Input Element */}
+              <input
+                type="tel"
+                pattern="[0-9]*"
+                maxLength="10"
+                placeholder={t('Phone Number / Username')}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                required
+                style={{
+                  flex: 1,
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#1C2615',
+                  fontSize: '1.05rem',
+                  fontWeight: '700',
+                  padding: '10px 0',
+                  letterSpacing: '0.5px'
+                }}
+              />
+              <Smartphone size={20} color="#8A9E79" />
+            </div>
           </div>
 
-
-          
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '8px', color: '#1A1A1A' }} disabled={loading}>
-            {loading ? t('Processing...') : t('Login')}
+          {/* Primary Green Gradient Continue Button */}
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #546E3F 0%, #3B532B 100%)',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '16px 24px',
+              fontSize: '1.05rem',
+              fontWeight: '700',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              boxShadow: '0 10px 24px rgba(59, 83, 43, 0.25)',
+              transition: 'all 0.25s ease',
+              opacity: loading ? 0.8 : 1
+            }}
+            onMouseOver={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 14px 28px rgba(59, 83, 43, 0.32)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 24px rgba(59, 83, 43, 0.25)';
+              }
+            }}
+          >
+            {loading ? t('Processing...') : (
+              <>
+                <span>{t('Login')}</span>
+                <ArrowRight size={20} />
+              </>
+            )}
           </button>
         </form>
 
-        {/* Scanner Card Area */}
-        <div style={{ 
-          backgroundColor: 'transparent', 
-          display: 'flex', 
-          flexDirection: 'column', 
+        {/* Divider */}
+        <div style={{
+          width: '100%',
+          display: 'flex',
           alignItems: 'center',
-          marginTop: '8px'
+          gap: '12px',
+          margin: '22px 0',
+          color: '#A2B392',
+          fontSize: '0.78rem',
+          fontWeight: '700',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}>
-          {/* Card Mockup */}
-          <div style={{ position: 'relative', width: '100%', maxWidth: '280px', height: '180px', marginBottom: '24px' }}>
-            {/* The Government Card Image (Assuming it contains the scanner gun graphic) */}
-            <div style={{ 
-              position: 'absolute', top: '15px', left: '15px', right: '15px', bottom: '15px',
-              display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}>
-              <img src="/soil_card.png" alt="Soil Card" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-            
-            {/* Scanner Frame Corners */}
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '28px', height: '28px', borderTop: '2px solid #bce26e', borderLeft: '2px solid #bce26e', borderTopLeftRadius: '24px' }}></div>
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '28px', height: '28px', borderTop: '2px solid #bce26e', borderRight: '2px solid #bce26e', borderTopRightRadius: '24px' }}></div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '28px', height: '28px', borderBottom: '2px solid #bce26e', borderLeft: '2px solid #bce26e', borderBottomLeftRadius: '24px' }}></div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '28px', height: '28px', borderBottom: '2px solid #bce26e', borderRight: '2px solid #bce26e', borderBottomRightRadius: '24px' }}></div>
-          </div>
-
-          <p style={{ color: 'white', fontWeight: '500', marginBottom: '16px', fontSize: '0.95rem' }}>
-            {t('Or Quick-Scan to Login with Soil Card')}
-          </p>
-
-          <button 
-            onClick={() => {
-              navigate('/scan');
-            }}
-            style={{ 
-              width: '100%', 
-              backgroundColor: 'var(--brand-primary)', 
-              color: '#1A1A1A',
-              border: 'none',
-              borderRadius: '30px',
-              padding: '14px 24px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            {t('Scan & Link Card')}
-          </button>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#EBF1E5' }} />
+          <span>OR</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#EBF1E5' }} />
         </div>
 
+        {/* Secondary Outlined Scan Button with Camera Icon */}
+        <button
+          type="button"
+          onClick={() => navigate('/scan')}
+          style={{
+            width: '100%',
+            backgroundColor: '#FFFFFF',
+            color: '#3B532B',
+            border: '2px solid #546E3F',
+            borderRadius: '20px',
+            padding: '14px 20px',
+            fontSize: '0.98rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 4px 12px rgba(84, 110, 63, 0.05)'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#F4F8F0';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#FFFFFF';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Camera size={20} color="#3B532B" />
+          <span>{t('Or Quick-Scan to Login with Soil Card')}</span>
+        </button>
+
       </div>
+
+      {/* Trust Indicators at Bottom (AI Guidance, Live Weather, 100% Secure) */}
+      <div style={{
+        width: '100%',
+        maxWidth: '440px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gap: '12px',
+        marginTop: '24px',
+        position: 'relative',
+        zIndex: 2
+      }}>
+        {/* Indicator 1 */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          border: '1px solid #EFF4EA',
+          borderRadius: '16px',
+          padding: '12px 8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '6px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+        }}>
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            backgroundColor: '#F4F9EE',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Sparkles size={16} color="#546E3F" />
+          </div>
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#2C3A20' }}>
+            {t('AI Recommendations')}
+          </span>
+        </div>
+
+        {/* Indicator 2 */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          border: '1px solid #EFF4EA',
+          borderRadius: '16px',
+          padding: '12px 8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '6px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+        }}>
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            backgroundColor: '#FFFDE6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <CloudSun size={16} color="#D4B200" />
+          </div>
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#2C3A20' }}>
+            {t('Live Weather')}
+          </span>
+        </div>
+
+        {/* Indicator 3 */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          border: '1px solid #EFF4EA',
+          borderRadius: '16px',
+          padding: '12px 8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '6px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+        }}>
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            backgroundColor: '#F4F9EE',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <ShieldCheck size={16} color="#3B532B" />
+          </div>
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#2C3A20' }}>
+            {t('Secure Login')}
+          </span>
+        </div>
+      </div>
+
     </div>
   );
 }
