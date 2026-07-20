@@ -10,6 +10,7 @@ import LanguageToggle from '../components/LanguageToggle';
 import AddAlarmModal from '../components/AddAlarmModal';
 import WeatherWidget from '../components/WeatherWidget';
 import InlineAlarmCard from '../components/InlineAlarmCard';
+import ProfileModal from '../components/ProfileModal';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const openAlarmFor = (title) => {
     setModalTitle(title);
@@ -56,12 +58,19 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 0 24px' }}>
           
           {/* User Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div 
+            onClick={() => setIsProfileModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          >
             <div style={{
               width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white',
               display: 'flex', justifyContent: 'center', alignItems: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', border: '2px solid white'
-            }}>
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', border: '2px solid white',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
               <img src="/expert_avatar.png" alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -210,6 +219,11 @@ export default function Dashboard() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         initialTitle={modalTitle}
+      />
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </div>
   );

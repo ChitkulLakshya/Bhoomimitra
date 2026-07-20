@@ -17,9 +17,11 @@ export default function AuthPage() {
   const { user, signup } = useAuth();
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
+  const [isNameFocused, setIsNameFocused] = useState(false);
   const { t } = useTranslation();
 
   if (user) return <Navigate to="/" />;
@@ -36,7 +38,7 @@ export default function AuthPage() {
 
     setLoading(true);
     try {
-      await signup(phone, 'Farmer');
+      await signup(phone, name || 'Farmer');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -205,6 +207,52 @@ export default function AuthPage() {
         {/* Login Form */}
         <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* Full Name Input */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+            <label style={{
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              color: '#4A5B3B',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            }}>
+              {t('Full Name')}
+            </label>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#F7FAF4',
+              border: isNameFocused ? '2px solid #546E3F' : '1.5px solid #E2EAD8',
+              borderRadius: '20px',
+              padding: '6px 16px',
+              transition: 'all 0.2s ease',
+              boxShadow: isNameFocused ? '0 0 0 4px rgba(84, 110, 63, 0.1)' : 'none'
+            }}>
+              <input
+                type="text"
+                placeholder={t('Enter your full name')}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onFocus={() => setIsNameFocused(true)}
+                onBlur={() => setIsNameFocused(false)}
+                required
+                style={{
+                  flex: 1,
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#1C2615',
+                  fontSize: '1.05rem',
+                  fontWeight: '700',
+                  padding: '10px 0',
+                  letterSpacing: '0.5px'
+                }}
+              />
+              <Sparkles size={20} color="#8A9E79" />
+            </div>
+          </div>
+          
           {/* Phone Input Box with +91 Selector */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{
@@ -221,11 +269,11 @@ export default function AuthPage() {
               display: 'flex',
               alignItems: 'center',
               backgroundColor: '#F7FAF4',
-              border: isFocused ? '2px solid #546E3F' : '1.5px solid #E2EAD8',
+              border: isPhoneFocused ? '2px solid #546E3F' : '1.5px solid #E2EAD8',
               borderRadius: '20px',
               padding: '6px 16px',
               transition: 'all 0.2s ease',
-              boxShadow: isFocused ? '0 0 0 4px rgba(84, 110, 63, 0.1)' : 'none'
+              boxShadow: isPhoneFocused ? '0 0 0 4px rgba(84, 110, 63, 0.1)' : 'none'
             }}>
               {/* Country Code Pill */}
               <div style={{
@@ -252,8 +300,8 @@ export default function AuthPage() {
                 placeholder={t('Phone Number / Username')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onFocus={() => setIsPhoneFocused(true)}
+                onBlur={() => setIsPhoneFocused(false)}
                 required
                 style={{
                   flex: 1,
