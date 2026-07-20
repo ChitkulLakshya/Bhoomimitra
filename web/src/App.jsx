@@ -5,6 +5,7 @@ import { Shield, Leaf } from 'lucide-react';
 import SplashScreen from './components/SplashScreen';
 
 // Pages
+import Welcome from './pages/Welcome';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import NewPlot from './pages/NewPlot';
@@ -12,10 +13,14 @@ import ScanCard from './pages/ScanCard';
 import VerifyReading from './pages/VerifyReading';
 import Prescription from './pages/Prescription';
 import RagiAdvisory from './pages/RagiAdvisory';
+import Diagnostics from './pages/Diagnostics';
+import Inventory from './pages/Inventory';
+import PathComparison from './pages/PathComparison';
+import Community from './pages/Community';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/auth" />;
+  if (!user) return <Navigate to="/welcome" />;
   return children;
 };
 
@@ -43,9 +48,10 @@ function App() {
   return (
     <>
       {showSplash && <SplashScreen isFading={isFading} />}
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-base)' }}>
         <main style={{ flex: 1, position: 'relative' }}>
           <Routes>
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/plot/new" element={<ProtectedRoute><NewPlot /></ProtectedRoute>} />
@@ -53,12 +59,16 @@ function App() {
             <Route path="/verify/:plotId" element={<ProtectedRoute><VerifyReading /></ProtectedRoute>} />
             <Route path="/prescription/:plotId/:readingId" element={<ProtectedRoute><Prescription /></ProtectedRoute>} />
             <Route path="/ragi-advisory" element={<ProtectedRoute><RagiAdvisory /></ProtectedRoute>} />
+            <Route path="/diagnostics" element={<ProtectedRoute><Diagnostics /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+            <Route path="/activity" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+            <Route path="/compare-paths" element={<ProtectedRoute><PathComparison /></ProtectedRoute>} />
+            <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>
     </>
   );
 }
-
 
 export default App;

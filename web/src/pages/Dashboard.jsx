@@ -1,334 +1,213 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useCrop } from '../context/CropContext';
+import { useSoil } from '../context/SoilContext';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../firebase';
-import { Cloud, MapPin, RefreshCw, Home, Sprout, Thermometer, Droplets, Wind, CloudRain } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getBrowserLocation, getCachedWeatherReport, getFallbackLocation, getWeatherReportWithFallback, formatWeatherTime } from '../utils/weather';
-import { InteractiveMenu } from '../components/InteractiveMenu';
+import { Sprout, CloudRain, Bell } from 'lucide-react';
+import LanguageToggle from '../components/LanguageToggle';
+import AddAlarmModal from '../components/AddAlarmModal';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { language } = useLanguage();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const [weather, setWeather] = useState(getCachedWeatherReport());
-  const [weatherLoading, setWeatherLoading] = useState(!getCachedWeatherReport());
-  const [weatherRefreshing, setWeatherRefreshing] = useState(false);
-  const [weatherError, setWeatherError] = useState('');
+  const { t } = useTranslation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { activeCrop } = useCrop();
+  const { soilData } = useSoil();
 
-  const currentDate = new Date().toLocaleDateString(i18n.language === 'kn' ? 'kn-IN' : 'en-US', {
-    weekday: 'long', day: 'numeric', month: 'short', year: 'numeric'
-  });
+  const ph = soilData?.ph || 6.8;
+  const phPercentage = Math.max(0, Math.min(1, (ph - 4) / (10 - 4)));
+  const phRotation = -90 + (phPercentage * 180);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadWeather = async () => {
-      const cachedWeather = getCachedWeatherReport();
-      setWeatherRefreshing(true);
-      if (!cachedWeather) {
-        setWeatherLoading(true);
-      }
-      setWeatherError('');
-
-      let coords = null;
-
-      try {
-        coords = await getBrowserLocation();
-      } catch {
-        try {
-          const q = query(collection(db, 'plots'), where('owner_id', '==', user.id));
-          const snap = await getDocs(q);
-          const firstPlot = snap.docs[0]?.data();
-
-          if (firstPlot?.latitude != null && firstPlot?.longitude != null) {
-            coords = {
-              latitude: Number(firstPlot.latitude),
-              longitude: Number(firstPlot.longitude),
-            };
-          }
-        } catch {
-          // Ignore plot lookup failures and fall back below.
-        }
-
-        if (!coords && cachedWeather?.latitude != null && cachedWeather?.longitude != null) {
-          coords = {
-            latitude: cachedWeather.latitude,
-            longitude: cachedWeather.longitude,
-          };
-        }
-
-        if (!coords) {
-          coords = getFallbackLocation();
-        }
-      }
-
-      const report = await getWeatherReportWithFallback(coords);
-
-      if (cancelled) return;
-
-      setWeather(report);
-      setWeatherError(report.source === 'fallback' ? report.error || t('Weather unavailable') : '');
-      setWeatherLoading(false);
-      setWeatherRefreshing(false);
-    };
-
-    loadWeather().catch((error) => {
-      if (cancelled) return;
-
-      const cached = getCachedWeatherReport();
-      if (cached) {
-        setWeather(cached);
-        setWeatherError(t('Showing cached weather'));
-      } else {
-        setWeatherError(error.message || t('Weather unavailable'));
-      }
-
-      setWeatherLoading(false);
-      setWeatherRefreshing(false);
-    });
-
-    // Open-Meteo current conditions are model-backed and updated regularly.
-    // Refresh periodically so the dashboard does not become a stale snapshot.
-    const refreshTimer = setInterval(() => {
-      loadWeather().catch(() => {
-        // The existing cache/fallback state remains visible if refresh fails.
-      });
-    }, 10 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(refreshTimer);
-    };
-  }, [t, user.id]);
-
-  const refreshWeather = async () => {
-    setWeatherRefreshing(true);
-    setWeatherError('');
-
-    try {
-      const coords = await getBrowserLocation().catch(async () => {
-        try {
-          const q = query(collection(db, 'plots'), where('owner_id', '==', user.id));
-          const snap = await getDocs(q);
-          const firstPlot = snap.docs[0]?.data();
-
-          if (firstPlot?.latitude != null && firstPlot?.longitude != null) {
-            return {
-              latitude: Number(firstPlot.latitude),
-              longitude: Number(firstPlot.longitude),
-            };
-          }
-        } catch {
-          // fall back below
-        }
-
-        return getFallbackLocation();
-      });
-
-      const report = await getWeatherReportWithFallback(coords);
-      setWeather(report);
-      setWeatherError(report.source === 'fallback' ? report.error || t('Weather unavailable') : '');
-    } catch (error) {
-      setWeatherError(error.message || t('Weather unavailable'));
-    } finally {
-      setWeatherLoading(false);
-      setWeatherRefreshing(false);
-    }
-  };
+  const cropName = activeCrop?.name || 'Rice';
+  const currentDay = activeCrop?.currentDay || 40;
+  const totalDays = activeCrop?.totalDays || 120;
 
   return (
-    <div style={{ backgroundColor: '#F5F7F2', minHeight: '100vh', paddingBottom: '100px', position: 'relative' }}>
+    <div style={{ backgroundColor: 'var(--bg-base)', minHeight: '100vh', paddingBottom: '32px', position: 'relative', overflowX: 'hidden' }}>
       
-      {/* 1. Hero Banner Section (Replaces Green Header) */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        minHeight: '85vh',
-        backgroundImage: 'url(/wheat_background.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center bottom',
-        borderBottomLeftRadius: '32px',
-        borderBottomRightRadius: '32px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
-      }}>
-        {/* Top White Gradient Overlay */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, height: '50%',
-          background: 'linear-gradient(to bottom, rgba(255,255,255,1) 20%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%)',
-          zIndex: 0
-        }}></div>
-
-        {/* Top Content (Titles) */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '32px 24px 0 24px' }}>
+      {/* 1. Header & Weather Section */}
+      <div style={{ position: 'relative', width: '100%', height: '220px', backgroundImage: 'url(/terraced_crops.png)', backgroundSize: 'cover', backgroundPosition: 'center', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(84,110,63,0.85) 0%, rgba(84,110,63,0.3) 100%)', zIndex: 0 }}></div>
+        
+        <div style={{ position: 'relative', zIndex: 2, padding: '48px 24px 24px 24px', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
           
-          <h1 style={{ fontSize: '2.8rem', fontWeight: '900', margin: '0', lineHeight: '1.05', letterSpacing: '-1px' }}>
-            <span style={{ color: '#B87A38' }}>{t('THE FUTURE OF')}</span><br/>
-            <span style={{ color: '#4A6B22' }}>{t('RAGI FARMING')}</span>
-          </h1>
-          <p style={{ color: '#333', fontSize: '1.05rem', fontWeight: '600', marginTop: '16px', maxWidth: '260px', lineHeight: '1.4' }}>
-            {t('HeroSubtitle')}
-          </p>
-        </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <LanguageToggle />
+          </div>
 
-        {/* Center Radial Dial */}
-        <svg viewBox="0 0 100 100" style={{ position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '320px', height: '320px', zIndex: 1 }}>
-          {Array.from({ length: 50 }).map((_, i) => (
-            <line 
-              key={i}
-              x1="50" y1="5" x2="50" y2={i % 5 === 0 ? "12" : "8"} 
-              stroke="white" 
-              strokeWidth={i % 5 === 0 ? "1.5" : "1"} 
-              opacity={i > 25 ? 0.3 : 0.9} 
-              transform={`rotate(${i * 7.2} 50 50)`} 
-            />
-          ))}
-        </svg>
-
-        {/* Bottom "Welcome" Pill (Replacing Get Started button) */}
-        <div style={{ position: 'absolute', bottom: '70px', left: '24px', right: '24px', zIndex: 2 }}>
-          <div style={{
-            backgroundColor: 'rgba(255,255,255,0.25)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.5)',
-            borderRadius: '30px',
-            padding: '16px',
-            textAlign: 'center',
-            color: '#fff',
-            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
-          }}>
-            <span style={{ fontSize: '1.3rem', fontWeight: '800', display: 'block', marginBottom: '4px' }}>{t('Welcome')}, {user?.displayName || t('Farmer')}!</span>
-            <div style={{ fontSize: '0.9rem', fontWeight: '600', opacity: 0.95 }}>{currentDate}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', marginBottom: '-10px' }}>
+            <div style={{ color: 'white' }}>
+              <div style={{ fontSize: '4rem', fontWeight: '400', lineHeight: '1', display: 'flex', alignItems: 'flex-start', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                34
+                <span style={{ fontSize: '1.8rem', marginTop: '6px' }}>°</span>
+              </div>
+              <div style={{ fontSize: '0.9rem', fontWeight: '400', opacity: 0.9, marginTop: '8px' }}>
+                Sonoma County
+              </div>
+            </div>
+            <div style={{ paddingRight: '8px' }}>
+              <CloudRain size={56} color="#FFF154" strokeWidth={1.5} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Detailed live weather report */}
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '24px',
-        padding: '18px',
-        margin: '-48px 24px 24px 24px',
-        boxShadow: '0 12px 30px rgba(0,0,0,0.06)',
-        position: 'relative',
-        zIndex: 10
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#555', fontWeight: '600' }}>
-            <MapPin size={16} color="#688C31" /> {weather?.locationName === 'Current location' ? t('Current location') : (weather?.locationName || t('Anekal, Bengaluru'))}
+      <div style={{ backgroundColor: 'var(--bg-base)', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '32px 20px', marginTop: '-40px', position: 'relative', zIndex: 10 }}>
+        
+        {/* Title */}
+        <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: '800', marginBottom: '16px', textShadow: '0 2px 4px rgba(0,0,0,0.5)', lineHeight: '1.3' }}>
+          {t(`Path A - Traditional ${cropName}, Sonoma Field 1`)}
+        </h2>
+
+        {/* Top Cards (Dial & Growth Stage) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          
+          {/* Soil Diagnostics Dial */}
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '24px', padding: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '500', color: 'white', marginBottom: '12px' }}>Soil Diagnostics</div>
+            
+            <div style={{ position: 'relative', width: '120px', height: '60px', margin: '0 auto 12px auto' }}>
+              {/* Outer 5-color arc */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                borderRadius: '120px 120px 0 0',
+                background: 'conic-gradient(from 270deg at 50% 100%, #db5346 0deg, #db5346 36deg, #f3a033 36deg, #f3a033 72deg, #95cd5b 72deg, #95cd5b 108deg, #41a656 108deg, #41a656 144deg, #257d82 144deg, #257d82 180deg)',
+              }}></div>
+              
+              {/* Inner cutout */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                width: '80px', height: '40px',
+                backgroundColor: '#65814C', /* Matches the card color visually */
+                borderRadius: '80px 80px 0 0'
+              }}></div>
+
+              {/* 6.8 Text Overlay on Light Green */}
+              <div style={{
+                position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
+                fontSize: '0.65rem', fontWeight: 'bold', color: 'white', opacity: 0.9, zIndex: 3
+              }}>
+                6.8
+              </div>
+
+              {/* Needle */}
+              <div style={{
+                position: 'absolute', bottom: '-4px', left: '50%',
+                width: '6px', height: '45px',
+                backgroundColor: 'white',
+                transformOrigin: 'bottom center',
+                transform: `translateX(-50%) rotate(${phRotation}deg)`,
+                borderRadius: '6px 6px 2px 2px',
+                transition: 'transform 1s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                zIndex: 5,
+                boxShadow: '1px 0px 4px rgba(0,0,0,0.2)'
+              }}></div>
+            </div>
+            
+            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: 'white' }}>pH {ph}</div>
           </div>
-          <button type="button" onClick={refreshWeather} disabled={weatherRefreshing} style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer' }}>
-            <RefreshCw size={16} color="#688C31" style={{ opacity: weatherRefreshing ? 0.5 : 1, animation: weatherRefreshing ? 'spin 1s linear infinite' : 'none' }} />
-            <span style={{ fontSize: '0.75rem', color: '#688C31', fontWeight: '700' }}>{weatherLoading ? t('Loading...') : t('Refresh')}</span>
+
+          {/* Growth Stage */}
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '24px', padding: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '500', color: 'white', marginBottom: '8px' }}>Growth Stage</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'white', marginBottom: '16px' }}>Day {currentDay}</div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '6px', height: '28px' }}>
+              {[1, 2, 3, 4].map((sproutIndex) => {
+                const progressPercentage = currentDay / totalDays;
+                const isFilled = (sproutIndex / 4) <= (progressPercentage + 0.1);
+                return (
+                  <Sprout 
+                    key={sproutIndex}
+                    size={14 + (sproutIndex * 4)} 
+                    color={isFilled ? "#FFF154" : "rgba(255,255,255,0.3)"} 
+                    strokeWidth={isFilled ? 2 : 1.5}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Traditional Input Levels Card 1 */}
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '24px', padding: '20px', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '500', color: 'white', marginBottom: '16px' }}>Traditional Input Levels</h3>
+          
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'white', opacity: 0.9 }}>Highest Yield</span>
+              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#FFF154', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>Set Alarm</span>
+              </button>
+            </div>
+            <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '70%', height: '100%', backgroundColor: '#FFF154', borderRadius: '4px' }}></div>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'white', opacity: 0.9 }}>Total Input Cost</span>
+              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#FFF154', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>Set Alarm</span>
+              </button>
+            </div>
+            <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '25%', height: '100%', backgroundColor: '#FFF154', borderRadius: '4px' }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Traditional Input Levels Card 2 */}
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '24px', padding: '20px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '500', color: 'white', marginBottom: '12px' }}>Traditional Input Levels</h3>
+          
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', minHeight: '36px' }}>
+              <span style={{ fontSize: '0.8rem', color: 'white', opacity: 0.9, maxWidth: '200px', lineHeight: '1.4' }}>
+                Ragi crop hand-weeding complete required labor
+              </span>
+              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#FFF154', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', paddingBottom: '2px' }}>
+                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>Set Alarm</span>
+              </button>
+            </div>
+            <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '85%', height: '100%', backgroundColor: '#FFF154', borderRadius: '4px' }}></div>
+            </div>
+          </div>
+      </div>
+
+        {/* Daily Activity Button */}
+        <div style={{ marginTop: '32px', paddingBottom: '16px' }}>
+          <button 
+            onClick={() => navigate('/activity')}
+            style={{ 
+              width: '100%', 
+              backgroundColor: 'var(--brand-primary)', 
+              color: '#1A1A1A',
+              border: 'none',
+              borderRadius: '30px',
+              padding: '16px 24px',
+              fontSize: '1.05rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+            }}
+          >
+            {t('Daily Activity')}
           </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '12px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#688C31', fontWeight: '800', marginBottom: '6px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: weather?.source === 'live' ? '#2E9B52' : '#D18A2B' }} />
-              {weather?.source === 'live' ? t('Live now') : t('Cached weather')}
-            </div>
-            <div style={{ fontSize: '1rem', color: '#1a1a1a', fontWeight: '700' }}>{weather?.weatherCode != null ? t(`WeatherCode${weather.weatherCode}`, { defaultValue: t('Current conditions') }) : t('Weather unavailable')}</div>
-            <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '5px' }}>{t('Updated')} {weather?.updatedAt ? formatWeatherTime(weather.updatedAt, i18n.language === 'kn' ? 'kn-IN' : 'en-US') : '—'}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Cloud size={34} color="#A0C3D2" fill="#e0f2fe" />
-            <span style={{ fontSize: '2.15rem', fontWeight: '800', color: '#1a1a1a', letterSpacing: '-1px' }}>
-              {weatherLoading ? '—' : weather?.temperatureC != null ? `${Math.round(weather.temperatureC)}°C` : '—'}
-            </span>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '7px', marginBottom: '14px' }}>
-          {[
-            [Thermometer, t('Soil temperature'), weather?.soilTemperatureC, '°C', t('Soil temperature meaning')],
-            [Droplets, t('Humidity'), weather?.humidity, '%', t('Humidity meaning')],
-            [CloudRain, t('Rain chance'), weather?.precipitationProbability, '%', t('Rain chance meaning')],
-            [Wind, t('Wind'), weather?.windSpeed, ' km/h', t('Wind meaning')],
-          ].map(([Icon, label, value, unit, meaning]) => (
-            <div key={label} style={{ background: '#F7F9F5', borderRadius: '11px', padding: '10px 12px', border: '1px solid #EEF1EA', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', columnGap: '12px' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#688C31', fontSize: '0.76rem', fontWeight: '800' }}><Icon size={15} /> {label}</div>
-                <div style={{ fontSize: '0.66rem', lineHeight: '1.2', color: '#7A7A7A', marginTop: '3px' }}>{meaning}</div>
-              </div>
-              <div style={{ fontSize: '1.15rem', fontWeight: '800', color: '#1a1a1a' }}>{weatherLoading || value == null ? '—' : `${typeof value === 'number' ? Math.round(value * 10) / 10 : value}${unit}`}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', paddingTop: '11px', borderTop: '1px solid #F0F2EE', color: '#666', fontSize: '0.7rem' }}>
-          <div><strong style={{ color: '#1a1a1a' }}>{t('Today')}:</strong> {weather?.lowTemperatureC != null ? `${Math.round(weather.lowTemperatureC)}°C ${t('low')}` : '—'} · {weather?.highTemperatureC != null ? `${Math.round(weather.highTemperatureC)}°C ${t('high')}` : '—'}</div>
-          <div><strong style={{ color: '#1a1a1a' }}>{t('Max wind')}:</strong> {weather?.maxWindSpeed != null ? `${Math.round(weather.maxWindSpeed)} km/h` : '—'}</div>
-        </div>
-
-        {(weatherError || weather?.source === 'cache') && (
-          <div style={{ marginTop: '14px', fontSize: '0.8rem', color: '#6B7280' }}>{weather?.source === 'cache' ? t('Showing cached weather') : t('Weather unavailable')}</div>
-        )}
       </div>
 
-      {/* 3. Finger Millet Information Card (Replacing Search Bar) */}
-      <div style={{ margin: '0 24px 28px 24px' }}>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', borderLeft: '4px solid #688C31' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1a1a1a', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sprout size={18} color="#688C31" /> {t('RagiInfoTitle')}
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: '#555', lineHeight: '1.6', margin: 0 }}>
-            {t('RagiInfoText')}
-          </p>
-        </div>
-      </div>
-
-      {/* 5. My Fields Section */}
-      <div style={{ margin: '0 24px 24px 24px' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1a1a1a', marginBottom: '16px' }}>{t('My Fields')}</h3>
-        <div onClick={() => navigate('/scan')} style={{ 
-          height: '180px', 
-          borderRadius: '24px', 
-          backgroundImage: 'url(/field_aerial.png)', 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-          cursor: 'pointer'
-        }}>
-          {/* Inner gradient overlay for text readability */}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)' }} />
-          
-          <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', color: 'white' }}>
-            <div>
-              <h4 style={{ fontSize: '1.2rem', fontWeight: '700', margin: '0 0 4px 0' }}>{t('Anekal Ragi Plot')}</h4>
-              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Sprout size={14} /> 40 q/ha {t('Target Yield')}
-              </span>
-            </div>
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', padding: '8px 14px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: '700' }}>
-              {t('Scan Card')}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Interactive Navigation Bar */}
-      <InteractiveMenu 
-        items={[
-          { label: 'home', icon: Home, route: '/' },
-          { label: 'plan', icon: Sprout, route: '/ragi-advisory' },
-          { label: 'language', icon: null, route: null },
-        ]}
-        activeIndex={0} 
-        onNavigate={(route) => navigate(route)} 
-      />
+      <AddAlarmModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

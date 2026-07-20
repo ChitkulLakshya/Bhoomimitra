@@ -32,15 +32,6 @@ export default function RagiAdvisory() {
       <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 16 }}><b style={{ color: '#4A6B22' }}>{t('Next task')}: {plan.tasks[0].title}</b><p style={{ marginBottom: 0, color: '#555' }}>{plan.tasks[0].instruction}</p></div>
       <button type="button" onClick={() => navigate('/scan')} style={{ width: '100%', marginTop: 18, border: 'none', padding: 15, borderRadius: 16, background: '#688C31', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}><ScanLine size={19} style={{ verticalAlign: 'middle', marginRight: 8 }} />{t('Scan verify Soil Health Card')}</button>
     </main>
-    <InteractiveMenu 
-      items={[
-        { label: 'home', icon: Home, route: '/' },
-        { label: 'plan', icon: Sprout, route: '/ragi-advisory' },
-        { label: 'language', icon: null, route: null },
-      ]}
-      activeIndex={1} 
-      onNavigate={(route) => navigate(route)} 
-    />
   </div>;
 }
 const inputStyle = { display: 'block', boxSizing: 'border-box', width: '100%', border: '1px solid #DCE5D4', borderRadius: 11, marginTop: 6, padding: '11px 10px', background: '#F7F9F5', color: '#1A1A1A', fontSize: '1rem' };

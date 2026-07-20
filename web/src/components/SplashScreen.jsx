@@ -9,7 +9,7 @@ export default function SplashScreen({ isFading }) {
       left: 0,
       width: '100vw',
       height: '100dvh',
-      backgroundColor: '#FFFFFF',
+      backgroundColor: 'var(--bg-base)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
