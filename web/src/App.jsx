@@ -50,10 +50,13 @@ function App() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-base)' }}>
         <main style={{ flex: 1, position: 'relative' }}>
           <Routes>
+import Analyzing from './pages/Analyzing';
+
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/plot/new" element={<ProtectedRoute><NewPlot /></ProtectedRoute>} />
             <Route path="/scan" element={<ProtectedRoute><ScanCard /></ProtectedRoute>} />
+            <Route path="/analyzing" element={<ProtectedRoute><Analyzing /></ProtectedRoute>} />
             <Route path="/verify/:plotId" element={<ProtectedRoute><VerifyReading /></ProtectedRoute>} />
             <Route path="/prescription/:plotId/:readingId" element={<ProtectedRoute><Prescription /></ProtectedRoute>} />
             <Route path="/ragi-advisory" element={<ProtectedRoute><RagiAdvisory /></ProtectedRoute>} />
