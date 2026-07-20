@@ -122,10 +122,6 @@ export const getWeatherReport = async (latitude, longitude) => {
   });
 
   const weatherUrl = `https://api.open-meteo.com/v1/forecast?${weatherParams.toString()}`;
-
-  // Open-Meteo's Geocoding API supports forward search, not reverse lookup.
-  // Keep reverse geocoding out of this request so a missing locality name
-  // cannot produce browser CORS/404 noise or affect live weather.
   const weatherResponse = await fetch(weatherUrl);
 
   if (!weatherResponse.ok) {
@@ -136,8 +132,20 @@ export const getWeatherReport = async (latitude, longitude) => {
   const current = data?.current || data?.current_weather || {};
   const daily = data?.daily || {};
 
+  // Try fetching reverse-geocoded location name (city/district)
+  let locationName = 'Current location';
+  try {
+    const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      locationName = geoData.city || geoData.locality || geoData.principalSubdivision || 'Current location';
+    }
+  } catch (e) {
+    console.warn("Reverse geocode failed:", e);
+  }
+
   const report = {
-    locationName: 'Current location',
+    locationName,
     latitude,
     longitude,
     temperatureC: current.temperature_2m ?? current.temperature ?? null,
@@ -173,13 +181,27 @@ export const getWeatherReport = async (latitude, longitude) => {
 };
 
 export const getWeatherReportWithFallback = async ({ latitude, longitude } = {}) => {
-  const cached = getStoredCache();
-  const lat = latitude ?? cached?.latitude ?? DEFAULT_LOCATION.latitude;
-  const lng = longitude ?? cached?.longitude ?? DEFAULT_LOCATION.longitude;
+  let lat = latitude;
+  let lng = longitude;
+
+  // Prompt for browser geolocation if no explicit coords were passed
+  if (!lat || !lng) {
+    try {
+      const browserLoc = await getBrowserLocation();
+      lat = browserLoc.latitude;
+      lng = browserLoc.longitude;
+    } catch (e) {
+      console.warn("Browser geolocation permission denied or unavailable, using fallback coords:", e);
+      const cached = getStoredCache();
+      lat = cached?.latitude ?? DEFAULT_LOCATION.latitude;
+      lng = cached?.longitude ?? DEFAULT_LOCATION.longitude;
+    }
+  }
 
   try {
     return await getWeatherReport(lat, lng);
   } catch (error) {
+    const cached = getStoredCache();
     if (cached) {
       return { ...cached, source: 'cache', error: error.message };
     }

@@ -48,8 +48,21 @@ const WeatherWidget = () => {
   const sunrise = weather.sunrise ? formatWeatherTime(weather.sunrise) : '--:--';
   const sunset = weather.sunset ? formatWeatherTime(weather.sunset) : '--:--';
 
-  // If we have a location name from the API or user setting, display it. Otherwise default to Sonoma
-  const locName = weather.locationName !== 'Current location' ? weather.locationName : 'Sonoma County';
+  const handleRefreshLocation = async () => {
+    setLoading(true);
+    try {
+      // Clear cache so it forces a new geolocation check
+      localStorage.removeItem('bhoomimitra.weather.cache.v1');
+      const report = await getWeatherReportWithFallback();
+      setWeather(report);
+    } catch (err) {
+      console.error('Weather refresh error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const locName = weather.locationName || t('Current location');
 
   return (
     <div style={{
@@ -68,9 +81,13 @@ const WeatherWidget = () => {
         
         {/* Left Side: Location & Temp */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', color: '#1A1A1A' }}>
-            <MapPin size={18} />
-            <span style={{ fontSize: '0.95rem', fontWeight: '500' }}>{locName}</span>
+          <div 
+            onClick={handleRefreshLocation}
+            title={t('Click to detect current location')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', color: '#1A1A1A', cursor: 'pointer' }}
+          >
+            <MapPin size={18} color="#5C763A" />
+            <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#2C3A20' }}>{locName}</span>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
