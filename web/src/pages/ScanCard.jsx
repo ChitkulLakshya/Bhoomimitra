@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { analyzeCard } from '../utils/ai';
 import { Image as ImageIcon, Camera, ScanLine, X, Zap, ShieldAlert, RefreshCw } from 'lucide-react';
@@ -100,8 +100,19 @@ export default function ScanCard() {
         }
       });
 
-      const targetPlot = plotId || 'default_plot';
-      navigate(`/verify/${targetPlot}`, { state: { scannedData: result } });
+      const payload = {
+        userId: user.id,
+        ph: result.ph || 6.8,
+        nitrogen: result.nitrogen || 45,
+        phosphorus: result.phosphorus || 20,
+        potassium: result.potassium || 110,
+        recommendations: result.recommendations || [],
+        detailed_daily_activities: result.detailed_daily_activities || [],
+        testedAt: new Date().toISOString()
+      };
+      
+      await addDoc(collection(db, 'soil_tests'), payload);
+      navigate('/inventory');
     } catch (err) {
       console.error(err);
       setError(t('Failed to analyze the card. Please try again with a clearer photo.'));
@@ -279,14 +290,16 @@ export default function ScanCard() {
           <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderBottomLeftRadius: '28px' }}></div>
           <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderBottomRightRadius: '28px' }}></div>
 
-          {/* Scanning Animation Line */}
-          {busy && <div style={{ width: '100%', height: '3px', backgroundColor: '#D4E157', position: 'absolute', top: '50%', boxShadow: '0 0 14px #D4E157', animation: 'pulse 1s infinite' }}></div>}
-
           {busy && (
-            <div style={{ position: 'absolute', left: '16px', right: '16px', bottom: '16px', padding: '12px 14px', borderRadius: '16px', backgroundColor: 'rgba(0,0,0,0.75)', color: 'white' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '8px' }}>{scanStage || 'Scanning...'}</div>
-              <div style={{ height: '6px', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
-                <div style={{ width: `${scanProgress}%`, height: '100%', borderRadius: '999px', backgroundColor: '#D4E157', transition: 'width 200ms ease' }}></div>
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '28px', zIndex: 20 }}>
+              <dotlottie-wc
+                src="https://lottie.host/be488a8d-fbbb-4467-bb02-0d1db42aa84c/HmdbgcttOa.lottie"
+                style={{ width: '250px', height: '250px' }}
+                autoplay
+                loop
+              ></dotlottie-wc>
+              <div style={{ marginTop: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#D4E157', textAlign: 'center', padding: '0 16px', lineHeight: '1.4' }}>
+                Adding to Gemini 2.5 Flash and preparing deterministic advisory...
               </div>
             </div>
           )}
