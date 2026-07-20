@@ -39,6 +39,8 @@ export default function VerifyReading() {
         nitrogen: value('nitrogen') || 45,
         phosphorus: value('phosphorus') || 20,
         potassium: value('potassium') || 110,
+        recommendations: scannedData.recommendations || [],
+        detailed_daily_activities: scannedData.detailed_daily_activities || [],
         testedAt: new Date().toISOString()
       });
 

@@ -173,16 +173,24 @@ export default function Inventory() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sparkles size={18} color="#D4E157" />
               <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#D4E157', letterSpacing: '0.3px' }}>
-                {t('Gemini AI Recommendation for Your Soil')}
+                {t('Gemini Flash AI Recommendations')}
               </span>
             </div>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: '1.45' }}>
-              {soilData.ph < 6.5
-                ? t('Soil is slightly acidic (pH {{ph}}). Applied 0.5kg Lime treatment step to Eco-Compost routine.', { ph: soilData.ph })
-                : soilData.nitrogen < 50
-                ? t('Soil Nitrogen is low ({{n}} mg/kg). Daily Activity auto-boosted to 3 Eco-Compost sacks.', { n: soilData.nitrogen })
-                : t('Soil Health Score is Optimal (pH {{ph}}, N {{n}} mg/kg). Standard eco-activity plan active.', { ph: soilData.ph, n: soilData.nitrogen })}
-            </p>
+            {soilData.recommendations && soilData.recommendations.length > 0 ? (
+              <ul style={{ margin: 0, paddingLeft: '20px', color: 'rgba(255,255,255,0.95)', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                {soilData.recommendations.map((rec, i) => (
+                  <li key={i}>{rec}</li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: '1.45' }}>
+                {soilData.ph < 6.5
+                  ? t('Soil is slightly acidic (pH {{ph}}). Applied 0.5kg Lime treatment step to Eco-Compost routine.', { ph: soilData.ph })
+                  : soilData.nitrogen < 50
+                  ? t('Soil Nitrogen is low ({{n}} mg/kg). Daily Activity auto-boosted to 3 Eco-Compost sacks.', { n: soilData.nitrogen })
+                  : t('Soil Health Score is Optimal (pH {{ph}}, N {{n}} mg/kg). Standard eco-activity plan active.', { ph: soilData.ph, n: soilData.nitrogen })}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -198,7 +206,7 @@ export default function Inventory() {
           boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
         }}>
 
-          {items.map((item, index) => {
+          {(soilData?.detailed_daily_activities?.length > 0 ? soilData.detailed_daily_activities : items).map((item, index) => {
             const isExpanded = expandedId === item.id;
             return (
               <React.Fragment key={item.id}>
