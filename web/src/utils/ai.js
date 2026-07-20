@@ -1,11 +1,27 @@
 import { buildRagiPlan } from './ragiEngine';
-import { performLocalOCR } from './ocr';
-
 const API_BASE = "http://localhost:8000/api";
 
 export const analyzeCard = async (base64Image, onProgress = null) => {
-  // Phase 3: Run OCR completely offline on the client side using Tesseract.js!
-  return await performLocalOCR(base64Image, onProgress);
+  if (onProgress) {
+    onProgress({ stage: 'uploading', progress: 0.3, message: 'Uploading to AI...' });
+  }
+
+  const res = await fetch(`${API_BASE}/ai/analyze-card`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image_base64: base64Image, mime: "image/jpeg" })
+  });
+
+  if (onProgress) {
+    onProgress({ stage: 'parsing', progress: 0.8, message: 'Extracting Values...' });
+  }
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || "Failed to analyze card");
+  }
+
+  return res.json();
 };
 
 export const scanSoil = async (base64Image, crop) => {

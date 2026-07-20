@@ -30,7 +30,7 @@ export default function RagiAdvisory() {
       </div>
       <h2 style={headingStyle}>{t('What to use')}</h2>{plan.products.map((item) => <div key={item.id} style={{ background: 'white', borderRadius: 18, padding: 16, marginBottom: 10, boxShadow: '0 4px 15px rgba(0,0,0,.03)', borderLeft: '4px solid #688C31' }}><div style={{ display: 'flex', gap: 9, alignItems: 'center', color: '#4A6B22' }}><PackageCheck size={20} /><b>{t(`product_${item.id}`)}</b></div><p style={{ margin: '9px 0 4px', color: '#333', fontWeight: 700 }}>{item.totalKg} kg total · {item.bags50kg} × 50 kg bags</p><small style={{ color: '#666' }}>{t(`timing_${item.id}_${waterRegime}`)}</small></div>)}
       <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 16 }}><b style={{ color: '#4A6B22' }}>{t('Next task')}: {plan.tasks[0].title}</b><p style={{ marginBottom: 0, color: '#555' }}>{plan.tasks[0].instruction}</p></div>
-      <button type="button" onClick={() => navigate('/scan')} style={{ width: '100%', marginTop: 18, border: 'none', padding: 15, borderRadius: 16, background: '#688C31', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}><ScanLine size={19} style={{ verticalAlign: 'middle', marginRight: 8 }} />{t('Scan verify Soil Health Card')}</button>
+      <button type="button" onClick={() => navigate('/')} style={{ width: '100%', marginTop: 18, border: 'none', padding: 15, borderRadius: 16, background: '#688C31', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}><ScanLine size={19} style={{ verticalAlign: 'middle', marginRight: 8 }} />{t('Scan verify Soil Health Card')}</button>
     </main>
   </div>;
 }

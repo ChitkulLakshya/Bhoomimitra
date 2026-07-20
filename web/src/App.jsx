@@ -9,7 +9,6 @@ import Welcome from './pages/Welcome';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import NewPlot from './pages/NewPlot';
-import ScanCard from './pages/ScanCard';
 import VerifyReading from './pages/VerifyReading';
 import Prescription from './pages/Prescription';
 import RagiAdvisory from './pages/RagiAdvisory';
@@ -55,7 +54,6 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/plot/new" element={<ProtectedRoute><NewPlot /></ProtectedRoute>} />
-            <Route path="/scan" element={<ProtectedRoute><ScanCard /></ProtectedRoute>} />
             <Route path="/verify/:plotId" element={<ProtectedRoute><VerifyReading /></ProtectedRoute>} />
             <Route path="/prescription/:plotId/:readingId" element={<ProtectedRoute><Prescription /></ProtectedRoute>} />
             <Route path="/ragi-advisory" element={<ProtectedRoute><RagiAdvisory /></ProtectedRoute>} />

@@ -102,7 +102,7 @@ export default function Community() {
           <button className="btn btn-primary" style={{ backgroundColor: 'rgba(255,241,84,0.2)', color: 'var(--brand-primary)', border: '1px solid var(--brand-primary)', borderRadius: '16px', padding: '12px' }}>
             <Plus size={18} /> Log Activity
           </button>
-          <button onClick={() => navigate('/scan')} className="btn btn-primary" style={{ color: '#1A1A1A', borderRadius: '16px', padding: '12px' }}>
+          <button onClick={() => navigate('/')} className="btn btn-primary" style={{ color: '#1A1A1A', borderRadius: '16px', padding: '12px' }}>
             <QrCode size={18} /> Scan Field Tag
           </button>
         </div>

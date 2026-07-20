@@ -124,7 +124,7 @@ export default function AuthPage() {
 
           <button 
             onClick={() => {
-              navigate('/scan');
+              navigate('/');
             }}
             style={{ 
               width: '100%', 
