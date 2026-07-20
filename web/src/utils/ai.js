@@ -3,7 +3,7 @@ import { performLocalOCR } from './ocr';
 
 const API_BASE = "http://localhost:8000/api";
 
-export const analyzeCard = async (base64Image, onProgress = null) => {
+export const analyzeCard = async (base64Image, onProgress = null, language = 'en') => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (apiKey) {
@@ -85,6 +85,7 @@ export const analyzeCard = async (base64Image, onProgress = null) => {
                       {
                         role: 'system',
                         content: `You are an expert agronomist AI. Given soil numeric values, generate exact recommendations and deterministic daily activity plans.
+CRITICAL INSTRUCTION: You MUST translate all generated text strings (recommendations, activity names, summaries, dosage details, steps, info) strictly into the language code: "${language}". Keep JSON keys in English, but translate the values.
 Return ONLY a valid JSON object matching this schema:
 {
   "recommendations": ["short actionable advice 1", "short advice 2"],

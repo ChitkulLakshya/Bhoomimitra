@@ -5,13 +5,16 @@ import { analyzeCard } from '../utils/ai';
 import { useAuth } from '../context/AuthContext';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useTranslation } from 'react-i18next';
 
 export default function Analyzing() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
   const processed = useRef(false);
   const base64Data = location.state?.base64Data;
+  const [statusText, setStatusText] = useState('Initializing AI pipeline...');
 
   useEffect(() => {
     if (!base64Data) {
@@ -24,7 +27,9 @@ export default function Analyzing() {
 
     const processData = async () => {
       try {
-        const result = await analyzeCard(base64Data);
+        const result = await analyzeCard(base64Data, (update) => {
+          if (update && update.message) setStatusText(update.message);
+        }, i18n.language);
         
         const payload = {
           userId: user?.id || 'anonymous',
@@ -58,7 +63,7 @@ export default function Analyzing() {
         style={{ width: '300px', height: '300px' }}
       />
       <div style={{ marginTop: '24px', fontSize: '1.1rem', fontWeight: 700, color: '#1A1A1A', textAlign: 'center', padding: '0 24px', lineHeight: '1.5' }}>
-        Adding to Gemini 3.5 Flash and preparing deterministic advisory...
+        {statusText}
       </div>
     </div>
   );
