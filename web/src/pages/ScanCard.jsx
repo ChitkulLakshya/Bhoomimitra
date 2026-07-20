@@ -175,54 +175,7 @@ export default function ScanCard() {
           }}
         />
 
-        {/* Camera Permission / Error Banner */}
-        {!cameraActive && (
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: '#162212',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '32px 24px',
-            textAlign: 'center',
-            color: 'white',
-            zIndex: 5
-          }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <ShieldAlert size={32} color="#D4E157" />
-            </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>{t('Camera Permission Required')}</h3>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '24px', maxWidth: '320px', lineHeight: '1.4' }}>
-              {cameraError || t('Please allow camera access to scan soil cards directly, or select a file from your device.')}
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={startCamera}
-                style={{
-                  backgroundColor: '#5C763A', color: 'white', border: 'none', borderRadius: '24px',
-                  padding: '12px 20px', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '8px'
-                }}
-              >
-                <RefreshCw size={16} />
-                {t('Grant Permission')}
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', borderRadius: '24px',
-                  padding: '12px 20px', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '8px'
-                }}
-              >
-                <ImageIcon size={16} />
-                {t('Select Image')}
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {error && (
           <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', backgroundColor: '#D9534F', color: 'white', padding: '14px', borderRadius: '16px', textAlign: 'center', zIndex: 50, fontWeight: '600' }}>
