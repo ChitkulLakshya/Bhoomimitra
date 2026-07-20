@@ -8,8 +8,9 @@ export const analyzeCard = async (base64Image, onProgress = null) => {
 
   if (apiKey) {
     const modelsToTry = [
-      'gemini-1.5-flash',
-      'gemini-2.0-flash'
+      'gemini-3.5-flash',
+      'gemini-2.5-flash',
+      'gemini-flash-latest'
     ];
 
     for (const modelName of modelsToTry) {
