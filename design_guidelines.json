@@ -1,0 +1,120 @@
+{
+  "app_name": "BhoomiMitra (Soil Friend)",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A structured, highly legible, and earthy tool that replaces complexity with clear, sequential guidance for farmers in the field.",
+  "color": {
+    "surface": "#F5F4F0",
+    "onSurface": "#1C1E1B",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1C1E1B",
+    "surfaceTertiary": "#E8E6DF",
+    "onSurfaceTertiary": "#2D332A",
+    "surfaceInverse": "#2D332A",
+    "onSurfaceInverse": "#F5F4F0",
+    "brand": "#2E5B3D",
+    "brandPrimary": "#2E5B3D",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#4A7A57",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#DCE8E0",
+    "onBrandTertiary": "#15331E",
+    "success": "#276B3D",
+    "onSuccess": "#FFFFFF",
+    "warning": "#A66300",
+    "onWarning": "#FFFFFF",
+    "error": "#A83226",
+    "onError": "#FFFFFF",
+    "info": "#2E5B3D",
+    "onInfo": "#FFFFFF",
+    "border": "#DCDCD2",
+    "borderStrong": "#8B968B",
+    "divider": "#E6E6DF"
+  },
+  "typography": {
+    "displayFontFamily": "Plus Jakarta Sans",
+    "textFontFamily": "Plus Jakarta Sans",
+    "scale": { "sm": 12, "base": 14, "lg": 16, "xl": 20, "2xl": 24 }
+  },
+  "spacing": { 
+    "rule": "Avoid dense layouts. Ensure massive touch targets (minimum 48pt) and generous vertical padding. Use a strict single-column flow to prevent cognitive overload. Eliminate horizontal scrolling.",
+    "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 24, "2xl": 32, "3xl": 48 
+  },
+  "radius_tokens": { "sm": 6, "md": 12, "lg": 20, "pill": 999 },
+  "shadow_tier": "1",
+  "navigation": "bottom_tabs",
+  "icon_set": "MaterialCommunityIcons",
+  "glassmorphism": {
+    "enabled": "false",
+    "do's": [],
+    "dont's": ["Do not use glass or blur. Glare in outdoor agricultural environments makes frosted glass completely unreadable. Stick to solid, high-contrast surfaces."]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-blur",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    { 
+      "name": "Auth / Onboarding",
+      "purpose": "Secure JWT login via Phone or Email with an upfront language toggle (English/Kannada).",
+      "states": { "loading": "Centered spinner over soft earthy background", "empty": "N/A", "error": "Clear red 'Try Again' banner" },
+      "layout": "Top area: Ragi field hero image with gradient scrim. Middle: Massive language toggle pill. Bottom: Large input field (min-height 56pt) and a sticky, full-width 'Send OTP' button pinned to the bottom above the keyboard. No hidden menus."
+    },
+    {
+      "name": "Home Dashboard",
+      "purpose": "A glanceable soil health summary for multiple plots and a primary entry point for scanning new reports.",
+      "states": { "loading": "Skeleton cards mimicking plot tiles", "empty": "Illustration of hands holding soil + 'Add Your First Plot' button", "error": "Offline indicator + Retry button" },
+      "layout": "Vertical single-column layout. Top: Farm location and weather summary. Middle: Plot Health Cards (large, color-coded status, high-contrast text). Bottom: A sticky, massive FAB (Floating Action Button) or persistent bottom action row labeled 'Scan Soil Card' using a camera icon. Avoid dense grids; stack everything vertically."
+    },
+    {
+      "name": "Soil Card Scanner (AI OCR)",
+      "purpose": "Guided, step-by-step camera flow to capture the physical soil card and answer AI survey questions.",
+      "states": { "loading": "Analyzing image (pulse animation on document)", "empty": "Camera viewfinder with framing guidelines", "error": "Blurry image detected - Retake button" },
+      "layout": "Full-screen camera with a dark semi-transparent overlay defining the scan area. Post-capture, present survey questions ONE AT A TIME in a vertical card format. Use oversized 'Yes'/'No' or graphical choice buttons. Provide visual audio-playback cues ('Press to read')."
+    },
+    {
+      "name": "Fertilizer Prescription",
+      "purpose": "Translates complex lab data into simple, step-by-step organic fertilizer applications.",
+      "states": { "loading": "Spinner with 'Calculating optimal mix...'", "empty": "N/A", "error": "Failed to generate plan - Retry button" },
+      "layout": "Replace data tables with sequential, task-based cards (e.g., 'Step 1: Add Compost'). Use literal icons (e.g., a bag, a leaf). Include a historical soil trend chart (N/P/K) wrapped in a horizontal scroll but keep it highly simplified (large data points, heavy line weights) for outdoor visibility."
+    },
+    {
+      "name": "Community & Labs Map",
+      "purpose": "Locate nearest soil testing labs, fertilizer shops, and view anonymized community plot health.",
+      "states": { "loading": "Map rendering placeholder", "empty": "No labs found within 50km", "error": "Location access denied" },
+      "layout": "Map view taking up the top 60% of the screen. Bottom 40% is a Bottom Sheet (`@gorhom/bottom-sheet`) containing a vertical list of nearest labs/shops with high-contrast 'Navigate' and 'Call' buttons. Ensure touch targets on the map pins are inflated to prevent fat-finger errors."
+    }
+  ],
+  "images": {
+    "auth_hero": { 
+      "url": "https://images.pexels.com/photos/10738421/pexels-photo-10738421.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", 
+      "alt": "Lush ragi millet field under clear sky" 
+    },
+    "empty_soil": { 
+      "url": "https://images.unsplash.com/photo-1492496913980-501348b61469?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxzb2lsJTIwaGFuZHMlMjBob2xkaW5nfGVufDB8fHx8MTc4Mjk2ODU5OHww&ixlib=rb-4.1.0&q=85", 
+      "alt": "Farmer hands holding fertile soil" 
+    },
+    "map_placeholder": { 
+      "url": "https://images.unsplash.com/photo-1712390165386-5facec5d17f3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHwxfHxydXJhbCUyMHZpbGxhZ2UlMjBtYXAlMjBsb2NhdGlvbiUyMHBpbnxlbnwwfHx8fDE3ODQzNTM4NzF8MA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Aerial view of a rural village and fields" 
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette. Do NOT use blue, indigo, or purple. Stick to the earthy greens, ochre, terracotta, and off-whites.",
+    "Implement the 'iOS-Native Clean' personality but optimize it for low literacy: replace all thin fonts with medium/bold weights (min 500w) and enforce massive touch targets (minimum 48pt height).",
+    "Avoid glassmorphism/blur completely. This app will be used outdoors in direct sunlight; frosted glass effects wash out and reduce legibility.",
+    "Ensure all text rendered over images uses the gradient scrim pattern (top-to-bottom transparent to >=70% surfaceInverse) to guarantee contrast.",
+    "Use literal, easily recognizable iconography (MaterialCommunityIcons: leaf, water, map-marker, camera) instead of abstract symbols. Avoid hidden hamburger menus.",
+    "Build the dashboard as a sequential vertical flow. Eliminate complex multi-column grids or dense data tables.",
+    "Include a prominent Language Toggle (English/Kannada) early in the Auth flow and in the user profile.",
+    "Mock JWT Auth, AI OCR extraction, map rendering, and AI fertilizer prescription generations.",
+    "When rendering historical soil charts, use heavy line weights and large data points for readability in high glare."
+  ]
+}
