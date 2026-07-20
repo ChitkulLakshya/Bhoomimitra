@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 
@@ -53,6 +53,28 @@ export const AlarmProvider = ({ children }) => {
   useEffect(() => {
     if (!user || alarms.length === 0) return;
 
+    const calculateNextOccurrence = (currentAlarmTime, selectedDays = []) => {
+      if (!selectedDays || selectedDays.length === 0) {
+        // Fallback: just add 1 day
+        const next = new Date(currentAlarmTime);
+        next.setDate(next.getDate() + 1);
+        return next;
+      }
+      
+      const dayMap = { 'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6 };
+      const targetDays = selectedDays.map(d => dayMap[d]).sort((a,b) => a-b);
+      
+      const next = new Date(currentAlarmTime);
+      next.setDate(next.getDate() + 1); // Start searching from tomorrow
+      
+      // Keep adding a day until we hit one of the selected days
+      while (!targetDays.includes(next.getDay())) {
+        next.setDate(next.getDate() + 1);
+      }
+      
+      return next;
+    };
+
     const checkAlarms = () => {
       const now = new Date();
       
@@ -64,12 +86,21 @@ export const AlarmProvider = ({ children }) => {
             // Trigger the alarm
             triggerNotification(alarm);
             
-            // Mark as triggered in Firestore
+            // Mark as triggered or calculate next occurrence in Firestore
             try {
-              const alarmRef = doc(db, 'alarms', alarm.id);
-              await updateDoc(alarmRef, { triggered: true });
+              if (alarm.repeatEnabled === false) {
+                // Non-repeating alarm: Delete completely after it rings
+                await deleteDoc(doc(db, 'alarms', alarm.id));
+                console.log(`Alarm deleted: ${alarm.title}`);
+              } else {
+                // Repeating alarm: Calculate next occurrence and update time
+                const nextTime = calculateNextOccurrence(alarmTime, alarm.selectedDays);
+                const alarmRef = doc(db, 'alarms', alarm.id);
+                await updateDoc(alarmRef, { time: nextTime, triggered: false });
+                console.log(`Alarm repeated. Next occurrence set to: ${nextTime}`);
+              }
             } catch (err) {
-              console.error("Error updating alarm trigger status:", err);
+              console.error("Error managing alarm trigger status:", err);
             }
           }
         }
@@ -117,7 +148,7 @@ export const AlarmProvider = ({ children }) => {
     }
   };
 
-  const addAlarm = async (title, description, timeDateObj) => {
+  const addAlarm = async (title, description, timeDateObj, repeatEnabled = false, selectedDays = []) => {
     if (!user) return;
     
     try {
@@ -126,6 +157,8 @@ export const AlarmProvider = ({ children }) => {
         title,
         description,
         time: timeDateObj,
+        repeatEnabled,
+        selectedDays,
         triggered: false,
         createdAt: serverTimestamp()
       });

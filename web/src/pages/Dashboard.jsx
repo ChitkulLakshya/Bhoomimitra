@@ -9,12 +9,19 @@ import { Sprout, Bell } from 'lucide-react';
 import LanguageToggle from '../components/LanguageToggle';
 import AddAlarmModal from '../components/AddAlarmModal';
 import WeatherWidget from '../components/WeatherWidget';
+import InlineAlarmCard from '../components/InlineAlarmCard';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+
+  const openAlarmFor = (title) => {
+    setModalTitle(title);
+    setIsModalOpen(true);
+  };
   
   const { activeCrop } = useCrop();
   const { soilData } = useSoil();
@@ -46,7 +53,27 @@ export default function Dashboard() {
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Top utility bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 24px 0 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 0 24px' }}>
+          
+          {/* User Profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', border: '2px solid white'
+            }}>
+              <img src="/expert_avatar.png" alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: '800', color: '#1A1A1A', textShadow: '0 1px 4px rgba(255,255,255,0.9)' }}>
+                {user?.name || 'Farmer Lakshya'}
+              </span>
+              <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#445', textShadow: '0 1px 4px rgba(255,255,255,0.9)' }}>
+                {user?.phone || '+91 9876543210'}
+              </span>
+            </div>
+          </div>
+
           <LanguageToggle style={{ color: '#1A1A1A', border: '1px solid rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)' }} />
         </div>
 
@@ -129,53 +156,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Traditional Input Levels Card 1 */}
-        <div style={{ backgroundColor: '#F5F8F2', borderRadius: '24px', padding: '20px', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>Traditional Input Levels</h3>
-          
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.85rem', color: '#555', fontWeight: '600' }}>Highest Yield</span>
-              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#E59F00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>Set Alarm</span>
-              </button>
-            </div>
-            <div style={{ width: '100%', height: '8px', backgroundColor: '#E2E8DF', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: '70%', height: '100%', backgroundColor: '#5C763A', borderRadius: '4px' }}></div>
-            </div>
-          </div>
-
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.85rem', color: '#555', fontWeight: '600' }}>Total Input Cost</span>
-              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#E59F00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>Set Alarm</span>
-              </button>
-            </div>
-            <div style={{ width: '100%', height: '8px', backgroundColor: '#E2E8DF', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: '25%', height: '100%', backgroundColor: '#5C763A', borderRadius: '4px' }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Traditional Input Levels Card 2 */}
-        <div style={{ backgroundColor: '#F5F8F2', borderRadius: '24px', padding: '20px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#1A1A1A', marginBottom: '12px' }}>Traditional Input Levels</h3>
-          
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', minHeight: '36px' }}>
-              <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: '600', maxWidth: '200px', lineHeight: '1.4' }}>
-                Ragi crop hand-weeding complete required labor
-              </span>
-              <button onClick={() => setIsModalOpen(true)} style={{ background: 'none', border: 'none', color: '#E59F00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', paddingBottom: '2px' }}>
-                <Bell size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>Set Alarm</span>
-              </button>
-            </div>
-            <div style={{ width: '100%', height: '8px', backgroundColor: '#E2E8DF', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: '85%', height: '100%', backgroundColor: '#5C763A', borderRadius: '4px' }}></div>
-            </div>
-          </div>
-      </div>
+        {/* Custom Green Alarm Interface Card */}
+        <InlineAlarmCard />
 
         {/* Action Buttons */}
         <div style={{ marginTop: '32px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -184,8 +166,8 @@ export default function Dashboard() {
             style={{ 
               width: '100%', 
               backgroundColor: 'white', 
-              color: 'var(--brand-primary)',
-              border: '2px solid var(--brand-primary)',
+              color: '#5C763A',
+              border: '2px solid #5C763A',
               borderRadius: '30px',
               padding: '16px 12px',
               fontSize: '1rem',
@@ -204,8 +186,8 @@ export default function Dashboard() {
             onClick={() => navigate('/activity')}
             style={{ 
               width: '100%', 
-              backgroundColor: 'var(--brand-primary)', 
-              color: '#1A1A1A',
+              backgroundColor: '#5C763A', 
+              color: 'white',
               border: 'none',
               borderRadius: '30px',
               padding: '16px 12px',
@@ -224,7 +206,11 @@ export default function Dashboard() {
 
       </div>
 
-      <AddAlarmModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddAlarmModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        initialTitle={modalTitle}
+      />
     </div>
   );
 }
