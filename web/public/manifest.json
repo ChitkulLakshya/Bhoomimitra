@@ -1,0 +1,26 @@
+{
+  "short_name": "BhoomiMitra",
+  "name": "BhoomiMitra Smart Farming",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F8FAF6",
+  "theme_color": "#546E3F",
+  "display": "standalone",
+  "orientation": "portrait"
+}
