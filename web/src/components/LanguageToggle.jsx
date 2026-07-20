@@ -24,7 +24,7 @@ const LanguageToggle = ({ style = {} }) => {
         ...style
       }}
     >
-      Language: {language === 'en' ? 'EN / KA' : 'KA / EN'}
+      {language === 'en' ? 'English / Kannada' : 'ಕನ್ನಡ / English'}
     </button>
   );
 };

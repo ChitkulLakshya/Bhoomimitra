@@ -1,16 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import LanguageToggle from '../components/LanguageToggle';
 import i18n from '../i18n';
 
 export default function Welcome() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'kn' : 'en';
-    i18n.changeLanguage(newLang);
-  };
 
   return (
     <div style={{
@@ -37,19 +33,7 @@ export default function Welcome() {
         
         {/* Language Toggle */}
         <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '32px' }}>
-          <div 
-            onClick={toggleLanguage}
-            style={{
-              display: 'flex', alignItems: 'center',
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-              borderRadius: '24px', padding: '6px 16px',
-              cursor: 'pointer', border: '1px solid rgba(255,255,255,0.3)',
-              color: 'white', fontWeight: '700', fontSize: '0.85rem'
-            }}
-          >
-            Language: EN / ಕ
-          </div>
+          <LanguageToggle />
         </div>
 
         {/* Hero Text */}

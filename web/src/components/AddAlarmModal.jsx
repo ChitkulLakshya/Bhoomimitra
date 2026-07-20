@@ -45,7 +45,7 @@ const AddAlarmModal = ({ isOpen, onClose, initialTitle = '', initialDescription 
     <div style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.6)',
+      backgroundColor: 'rgba(0,0,0,0.4)',
       backdropFilter: 'blur(4px)',
       display: 'flex',
       alignItems: 'center',
@@ -53,69 +53,71 @@ const AddAlarmModal = ({ isOpen, onClose, initialTitle = '', initialDescription 
       zIndex: 9999
     }}>
       <div style={{
-        backgroundColor: '#627c4b',
+        backgroundColor: '#FFFFFF',
         borderRadius: '24px',
         padding: '32px',
         width: '90%',
         maxWidth: '400px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-        border: '1px solid rgba(255,255,255,0.1)'
+        boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
+        border: '1px solid #EAEAEA'
       }}>
-        <h3 style={{ color: 'white', marginTop: 0, fontSize: '1.4rem' }}>Schedule Alarm</h3>
+        <h3 style={{ color: '#1A1A1A', marginTop: 0, fontSize: '1.4rem', fontWeight: '800', marginBottom: '24px' }}>Schedule Alarm</h3>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', marginBottom: '8px' }}>Alarm Title</label>
+            <label style={{ display: 'block', color: '#555', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Alarm Title</label>
             <input 
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Fertilize (Trad.)"
               style={{
-                width: '100%', padding: '12px', borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white', boxSizing: 'border-box'
+                width: '100%', padding: '14px', borderRadius: '12px',
+                border: '1px solid #CCC', backgroundColor: '#F9F9F9',
+                color: '#1A1A1A', boxSizing: 'border-box', fontSize: '1rem',
+                fontWeight: '500'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', marginBottom: '8px' }}>Description (Optional)</label>
+            <label style={{ display: 'block', color: '#555', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Description (Optional)</label>
             <input 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Field 1 needs NPK"
               style={{
-                width: '100%', padding: '12px', borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white', boxSizing: 'border-box'
+                width: '100%', padding: '14px', borderRadius: '12px',
+                border: '1px solid #CCC', backgroundColor: '#F9F9F9',
+                color: '#1A1A1A', boxSizing: 'border-box', fontSize: '1rem',
+                fontWeight: '500'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', marginBottom: '8px' }}>Time</label>
+            <label style={{ display: 'block', color: '#555', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Time</label>
             <input 
               required
               type="time"
               value={timeStr}
               onChange={(e) => setTimeStr(e.target.value)}
               style={{
-                width: '100%', padding: '12px', borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white', boxSizing: 'border-box',
-                colorScheme: 'dark' // forces white icon in some browsers
+                width: '100%', padding: '14px', borderRadius: '12px',
+                border: '1px solid #CCC', backgroundColor: '#F9F9F9',
+                color: '#1A1A1A', boxSizing: 'border-box', fontSize: '1rem',
+                fontWeight: '500'
               }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <button 
               type="button" 
               onClick={onClose}
               style={{
                 flex: 1, padding: '14px', borderRadius: '16px', border: 'none',
-                backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: 'bold'
+                backgroundColor: '#EEEEEE', color: '#555', fontWeight: '700', cursor: 'pointer', fontSize: '1rem'
               }}
             >
               Cancel
@@ -124,7 +126,8 @@ const AddAlarmModal = ({ isOpen, onClose, initialTitle = '', initialDescription 
               type="submit"
               style={{
                 flex: 1, padding: '14px', borderRadius: '16px', border: 'none',
-                backgroundColor: '#FFF154', color: '#1A1A1A', fontWeight: 'bold'
+                backgroundColor: 'var(--brand-primary)', color: '#1A1A1A', fontWeight: '800', cursor: 'pointer', fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             >
               Save Alarm

@@ -9,7 +9,7 @@ export default function SplashScreen({ isFading }) {
       left: 0,
       width: '100vw',
       height: '100dvh',
-      backgroundColor: 'var(--bg-base)',
+      backgroundColor: '#FFFFFF',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -42,7 +42,7 @@ export default function SplashScreen({ isFading }) {
           />
         </div>
         <h1 style={{ 
-          color: 'var(--brand-primary)', 
+          color: '#4a6136', 
           fontSize: '2rem',
           letterSpacing: '0.05em',
           marginTop: '-30px',
