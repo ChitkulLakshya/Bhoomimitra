@@ -5,7 +5,6 @@ import { Shield, Leaf } from 'lucide-react';
 import SplashScreen from './components/SplashScreen';
 
 // Pages
-import Welcome from './pages/Welcome';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import NewPlot from './pages/NewPlot';
@@ -20,7 +19,7 @@ import Community from './pages/Community';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/welcome" />;
+  if (!user) return <Navigate to="/auth" />;
   return children;
 };
 
@@ -51,7 +50,6 @@ function App() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-base)' }}>
         <main style={{ flex: 1, position: 'relative' }}>
           <Routes>
-            <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/plot/new" element={<ProtectedRoute><NewPlot /></ProtectedRoute>} />
