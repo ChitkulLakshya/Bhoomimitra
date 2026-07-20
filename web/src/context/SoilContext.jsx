@@ -25,36 +25,19 @@ export const SoilProvider = ({ children }) => {
       where('userId', '==', user.id)
     );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         // Just take the most recent soil test (assuming sorted or just one active)
         const doc = snapshot.docs[0];
         setSoilData({ id: doc.id, ...doc.data() });
       } else {
-        // Create dummy soil data if none exists
-        await createDummySoilTest(user.id);
+        setSoilData(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [user]);
-
-  const createDummySoilTest = async (userId) => {
-    try {
-      await addDoc(collection(db, 'soil_tests'), {
-        userId,
-        ph: 6.8,
-        nitrogen: 45, // mg/kg
-        phosphorus: 20, // mg/kg
-        potassium: 110, // mg/kg
-        moisture: 'Optimal',
-        testedAt: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Error creating dummy soil test:", error);
-    }
-  };
 
   return (
     <SoilContext.Provider value={{ soilData, loading }}>

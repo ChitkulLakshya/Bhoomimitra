@@ -42,6 +42,17 @@ export const AuthProvider = ({ children }) => {
         name,
         createdAt: new Date().toISOString()
       });
+      
+      // Auto-create a default plot so the scanner pipeline has a target
+      const { addDoc, collection } = await import('firebase/firestore');
+      await addDoc(collection(db, 'plots'), {
+        owner_id: cred.user.uid,
+        name: 'My Farm',
+        area_acres: 1,
+        crop: 'ragi',
+        water_regime: 'rainfed',
+        created_at: new Date().toISOString()
+      });
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
         // User already exists, silently log them in

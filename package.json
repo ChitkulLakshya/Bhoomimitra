@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && uvicorn server:app --reload --port 8000",
+    "dev:backend": "cd backend && npx tsx server.ts",
     "dev:frontend": "cd web && npm run dev"
   },
   "devDependencies": {
