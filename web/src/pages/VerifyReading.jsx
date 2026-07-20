@@ -47,16 +47,16 @@ export default function VerifyReading() {
       navigate(`/prescription/${plotId}/${readingRef.id}`);
     } catch (error) { alert(`Error saving reading: ${error.message}`); } finally { setSaving(false); }
   };
-  return <div className="container" style={{ maxWidth: 720 }}>
+  return <div className="container" style={{ maxWidth: 720, backgroundColor: '#FFFFFF', color: '#1A1A1A', minHeight: '100vh', margin: '0 auto', padding: '24px' }}>
     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
       <LanguageToggle />
     </div>
-    <h2>{t('Verify Soil Health Card')}</h2><p style={{ color: 'var(--text-muted)' }}>{t('No values are guessed')}</p>
-    <form onSubmit={handleSubmit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>{fields.map(([key, label, unit]) => <div key={key}><label className="label">{label} {unit && `(${unit})`}{['nitrogen','phosphorus','potassium'].includes(key) && ' *'}</label><input className="input" type="number" min="0" step="any" placeholder="Not read — enter from card" value={form[key]} onChange={(e) => setForm((old) => ({ ...old, [key]: e.target.value }))} /><small style={{ color: 'var(--text-muted)' }}>{scannedData.confidence?.[key] ? t('OCR found a value') : t('Not read by OCR')}</small></div>)}</div>
-      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /><span>{t('I checked these entries')}</span></label>
-      {invalidEssential && <p style={{ color: 'var(--error)' }}>{t('N P and K are required')}</p>}
-      <div style={{ display: 'flex', gap: 16 }}><button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>{t('Back to scan')}</button><button type="submit" className="btn btn-primary" disabled={saving || !confirmed || invalidEssential}>{saving ? t('Saving') : t('Generate verified plan')}</button></div>
+    <h2 style={{ color: '#1A1A1A' }}>{t('Verify Soil Health Card')}</h2><p style={{ color: '#666666' }}>{t('No values are guessed')}</p>
+    <form onSubmit={handleSubmit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16, backgroundColor: '#F8F9FA', border: '1px solid #E9ECEF' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>{fields.map(([key, label, unit]) => <div key={key}><label className="label" style={{ color: '#495057' }}>{label} {unit && `(${unit})`}{['nitrogen','phosphorus','potassium'].includes(key) && ' *'}</label><input className="input" type="number" min="0" step="any" placeholder="Not read — enter from card" value={form[key]} onChange={(e) => setForm((old) => ({ ...old, [key]: e.target.value }))} style={{ backgroundColor: '#FFFFFF', color: '#1A1A1A', borderColor: '#CED4DA' }} /><small style={{ color: '#868E96' }}>{scannedData.confidence?.[key] ? t('OCR found a value') : t('Not read by OCR')}</small></div>)}</div>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: '#1A1A1A' }}><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /><span>{t('I checked these entries')}</span></label>
+      {invalidEssential && <p style={{ color: '#D9534F' }}>{t('N P and K are required')}</p>}
+      <div style={{ display: 'flex', gap: 16 }}><button type="button" className="btn btn-secondary" onClick={() => navigate(-1)} style={{ color: '#4CAF50', borderColor: '#4CAF50' }}>{t('Back to scan')}</button><button type="submit" className="btn btn-primary" disabled={saving || !confirmed || invalidEssential} style={{ backgroundColor: '#4CAF50', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)' }}>{saving ? t('Saving') : t('Generate verified plan')}</button></div>
     </form>
   </div>;
 }

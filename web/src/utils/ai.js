@@ -29,7 +29,7 @@ export const analyzeCard = async (base64Image, onProgress = null) => {
                 {
                   parts: [
                     {
-                      text: `Analyze this Soil Health Card image carefully. Extract all soil health values exactly. Also generate custom daily activity plans for the farmer based on the soil conditions. Provide exact recommendations on how much fertilizers and manure to use, chemical timing, capacity, quantity, and for how many days.
+                      text: `Analyze this Soil Health Card image carefully. Extract all soil health values exactly. The image contains a table with "Soil Test Results". You must find the numbers for: "pH" -> map to "ph", "EC" -> map to "ec", "Organic Carbon (OC)" -> map to "organic_carbon", "Available Nitrogen (N)" -> map to "nitrogen", "Available Phosphorus (P)" -> map to "phosphorus", "Available Potassium (K)" -> map to "potassium". Also generate custom daily activity plans for the farmer based on the soil conditions. Provide exact recommendations on how much fertilizers and manure to use, chemical timing, capacity, quantity, and for how many days.
 Return ONLY a valid JSON object matching this schema:
 {
   "ph": number or null,
