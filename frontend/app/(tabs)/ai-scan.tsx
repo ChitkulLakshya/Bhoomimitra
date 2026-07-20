@@ -15,10 +15,12 @@ import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 import { useAuth } from "@/src/auth";
 import { theme } from "@/src/theme";
 import { t } from "@/src/i18n";
+import { db } from "@/src/firebase";
 
 const CROPS = ["Ragi", "Bajra", "Sorghum", "Maize", "Rice", "Ground Nut", "Tomato", "Onion", "Pulses"];
 
@@ -54,7 +56,7 @@ const LEVEL_LABEL = (v: number, language: any) => {
 };
 
 export default function AIScanScreen() {
-  const { api, language } = useAuth();
+  const { api, language, user } = useAuth();
   const insets = useSafeAreaInsets();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [crop, setCrop] = useState("Ragi");
@@ -67,11 +69,14 @@ export default function AIScanScreen() {
   const [plotId, setPlotId] = useState<string | null>(null);
 
   useEffect(() => {
-    api("/plots").then((data) => {
+    if (!user) return;
+    const q = query(collection(db, "plots"), where("owner_id", "==", user.id));
+    getDocs(q).then((snap) => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setPlots(data);
       if (data?.length) setPlotId(data[0].id);
     }).catch(() => {});
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (busy) {

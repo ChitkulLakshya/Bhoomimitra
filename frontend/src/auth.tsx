@@ -1,5 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 import { Lang } from "./i18n";
 
 const BACKEND = process.env.EXPO_PUBLIC_BACKEND_URL as string;
@@ -33,26 +36,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [language, setLanguageState] = useState<Lang>("en");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const t = await AsyncStorage.getItem("token");
-        const u = await AsyncStorage.getItem("user");
-        const l = (await AsyncStorage.getItem("language")) as Lang | null;
-        if (l) setLanguageState(l);
-        if (t && u) {
-          setToken(t);
-          setUser(JSON.parse(u));
+    // Load local language pref first
+    AsyncStorage.getItem("language").then((l) => {
+      if (l) setLanguageState(l as Lang);
+    });
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const idToken = await firebaseUser.getIdToken();
+        setToken(idToken);
+        // Fetch custom user profile from Firestore
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as User;
+          setUser({ ...userData, id: firebaseUser.uid });
+          if (userData.language) {
+            setLanguageState(userData.language);
+          }
+        } else {
+          // Fallback if doc doesn't exist
+          setUser({ id: firebaseUser.uid, name: firebaseUser.email || "User", identifier: firebaseUser.email || "", language: "en" });
         }
-      } finally {
-        setLoading(false);
+      } else {
+        setUser(null);
+        setToken(null);
       }
-    })();
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const setLanguage = useCallback((l: Lang) => {
     setLanguageState(l);
     AsyncStorage.setItem("language", l).catch(() => {});
-  }, []);
+    if (user) {
+      setDoc(doc(db, "users", user.id), { language: l }, { merge: true }).catch(() => {});
+    }
+  }, [user]);
 
   const api = useCallback(
     async (path: string, opts: any = {}) => {
@@ -74,40 +95,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [token]
   );
 
-  const persist = async (t: string, u: User) => {
-    setToken(t);
-    setUser(u);
-    await AsyncStorage.setItem("token", t);
-    await AsyncStorage.setItem("user", JSON.stringify(u));
-  };
-
   const signup = async (name: string, identifier: string, password: string) => {
-    const res = await fetch(`${API}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, identifier, password, language }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.detail || "Sign up failed");
-    await persist(data.token, data.user);
+    // Treat identifier as email
+    const email = identifier.includes("@") ? identifier : `${identifier}@bhoomimitra.local`;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
+    const userData: User = { id: uid, name, identifier, language };
+    
+    // Store in Firestore
+    await setDoc(doc(db, "users", uid), userData);
   };
 
   const login = async (identifier: string, password: string) => {
-    const res = await fetch(`${API}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.detail || "Login failed");
-    await persist(data.token, data.user);
-    if (data.user?.language) setLanguage(data.user.language);
+    const email = identifier.includes("@") ? identifier : `${identifier}@bhoomimitra.local`;
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = async () => {
-    setToken(null);
-    setUser(null);
-    await AsyncStorage.multiRemove(["token", "user"]);
+    await signOut(auth);
   };
 
   return (

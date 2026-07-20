@@ -4,10 +4,12 @@ import { Image } from "expo-image";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 
 import { useAuth } from "@/src/auth";
 import { theme, IMAGES } from "@/src/theme";
 import { t } from "@/src/i18n";
+import { db } from "@/src/firebase";
 
 type Plot = {
   id: string;
@@ -27,7 +29,7 @@ const HEALTH_COLOR = (score: number) => {
 };
 
 export default function Dashboard() {
-  const { api, user, language } = useAuth();
+  const { user, language } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [plots, setPlots] = useState<Plot[]>([]);
@@ -35,8 +37,18 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
-      const data = await api("/plots");
+      const q = query(collection(db, "plots"), where("owner_id", "==", user.id));
+      const snap = await getDocs(q);
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Plot[];
+      for (const p of data) {
+         const rq = query(collection(db, "readings"), where("plot_id", "==", p.id), orderBy("created_at", "desc"), limit(1));
+         const rSnap = await getDocs(rq);
+         if (!rSnap.empty) {
+             p.latest_reading = { id: rSnap.docs[0].id, ...rSnap.docs[0].data() };
+         }
+      }
       setPlots(data);
     } catch (e) {
       console.warn(e);
@@ -44,7 +56,7 @@ export default function Dashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [api]);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -142,6 +154,18 @@ export default function Dashboard() {
           ))
         )}
       </ScrollView>
+
+      {plots.length > 0 && (
+        <View style={{ position: "absolute", bottom: 20, left: 20, right: 20 }}>
+          <Pressable 
+            style={styles.fab}
+            onPress={() => router.push({ pathname: "/plot/card-scan", params: { plotId: plots[0].id } })}
+          >
+            <MaterialCommunityIcons name="camera" size={24} color="#fff" />
+            <Text style={styles.fabLabel}>Scan Soil Card</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }

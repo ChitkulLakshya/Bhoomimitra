@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Dimen
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { db } from "@/src/firebase";
 
 import { useAuth } from "@/src/auth";
 import { theme } from "@/src/theme";
@@ -12,7 +14,7 @@ const { width } = Dimensions.get("window");
 
 export default function PlotDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { api, language } = useAuth();
+  const { language } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [plot, setPlot] = useState<any>(null);
@@ -22,12 +24,18 @@ export default function PlotDetail() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, s] = await Promise.all([
-          api(`/plots/${id}`),
-          api(`/plots/${id}/scans`).catch(() => []),
-        ]);
+        const plotDoc = await getDoc(doc(db, "plots", id as string));
+        const p: any = plotDoc.exists() ? { id: plotDoc.id, ...plotDoc.data() } : null;
+        
+        let r: any[] = [];
+        if (p) {
+          const rq = query(collection(db, "readings"), where("plot_id", "==", id), orderBy("created_at", "asc"));
+          const rSnap = await getDocs(rq);
+          r = rSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          p.readings = r;
+        }
         setPlot(p);
-        setScans(s || []);
+        setScans([]);
       } catch (e) { console.warn(e); }
       finally { setLoading(false); }
     })();

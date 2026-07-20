@@ -14,13 +14,15 @@ import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { collection, addDoc } from "firebase/firestore";
 
 import { useAuth } from "@/src/auth";
 import { theme } from "@/src/theme";
 import { t } from "@/src/i18n";
+import { db } from "@/src/firebase";
 
 export default function NewPlot() {
-  const { api, language } = useAuth();
+  const { language, user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
@@ -29,6 +31,10 @@ export default function NewPlot() {
   const [lat, setLat] = useState("12.7089");
   const [lng, setLng] = useState("77.6968");
   const [busy, setBusy] = useState(false);
+  const [waterRegime, setWaterRegime] = useState("Rainfed");
+  const [sowingDate, setSowingDate] = useState("");
+  const [variety, setVariety] = useState("");
+  const [manureAvailable, setManureAvailable] = useState(false);
 
   const useLocation = async () => {
     const perm = await Location.requestForegroundPermissionsAsync();
@@ -50,18 +56,23 @@ export default function NewPlot() {
       Alert.alert("Enter a plot name");
       return;
     }
+    if (!user) return;
     setBusy(true);
     try {
-      await api("/plots", {
-        method: "POST",
-        body: JSON.stringify({
-          name: name.trim(),
-          crop: "Ragi",
-          area_acres: Number(area) || 1,
-          latitude: Number(lat) || 12.7089,
-          longitude: Number(lng) || 77.6968,
-          village,
-        }),
+      await addDoc(collection(db, "plots"), {
+        owner_id: user.id,
+        name: name.trim(),
+        crop: "Ragi",
+        area_acres: Number(area) || 1,
+        latitude: Number(lat) || 12.7089,
+        longitude: Number(lng) || 77.6968,
+        village,
+        water_regime: waterRegime,
+        sowing_date: sowingDate || null,
+        variety: variety || null,
+        manure_available: manureAvailable,
+        region: "Karnataka",
+        created_at: new Date().toISOString(),
       });
       router.back();
     } catch (e: any) {
@@ -89,6 +100,14 @@ export default function NewPlot() {
 
         <Text style={styles.label}>{t("village", language)}</Text>
         <TextInput testID="plot-village" style={styles.input} value={village} onChangeText={setVillage} placeholderTextColor="#8B968B" />
+
+        <Text style={styles.label}>Water regime</Text>
+        <View style={{ flexDirection: "row", gap: 12 }}><Pressable style={[styles.choice, waterRegime === "Rainfed" && styles.choiceActive]} onPress={() => setWaterRegime("Rainfed")}><Text>Rainfed</Text></Pressable><Pressable style={[styles.choice, waterRegime === "Irrigated" && styles.choiceActive]} onPress={() => setWaterRegime("Irrigated")}><Text>Irrigated</Text></Pressable></View>
+        <Text style={styles.label}>Sowing date (YYYY-MM-DD, optional)</Text>
+        <TextInput style={styles.input} value={sowingDate} onChangeText={setSowingDate} placeholder="2026-07-20" placeholderTextColor="#8B968B" />
+        <Text style={styles.label}>Ragi variety (optional)</Text>
+        <TextInput style={styles.input} value={variety} onChangeText={setVariety} placeholder="e.g. GPU 28" placeholderTextColor="#8B968B" />
+        <Pressable style={[styles.choice, manureAvailable && styles.choiceActive]} onPress={() => setManureAvailable(!manureAvailable)}><Text>FYM / compost available</Text></Pressable>
 
         <Text style={styles.label}>Latitude</Text>
         <TextInput testID="plot-lat" style={styles.input} value={lat} onChangeText={setLat} keyboardType="numeric" placeholderTextColor="#8B968B" />
@@ -119,4 +138,6 @@ const styles = StyleSheet.create({
   primaryLabel: { color: "#fff", fontSize: theme.font.lg, fontWeight: "700" },
   secondary: { minHeight: 56, borderRadius: theme.radius.md, borderWidth: 1.5, borderColor: theme.color.brandPrimary, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   secondaryLabel: { color: theme.color.brandPrimary, fontSize: theme.font.lg, fontWeight: "700" },
+  choice: { flex: 1, minHeight: 46, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.color.borderStrong, justifyContent: "center", alignItems: "center", backgroundColor: theme.color.surfaceSecondary },
+  choiceActive: { borderColor: theme.color.brandPrimary, backgroundColor: theme.color.brandTertiary },
 });
