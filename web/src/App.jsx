@@ -62,6 +62,7 @@ function App() {
             <Route path="/activity" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             <Route path="/compare-paths" element={<ProtectedRoute><PathComparison /></ProtectedRoute>} />
             <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
