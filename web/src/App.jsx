@@ -9,6 +9,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import NewPlot from './pages/NewPlot';
 import ScanCard from './pages/ScanCard';
+import Analyzing from './pages/Analyzing';
 import VerifyReading from './pages/VerifyReading';
 import Prescription from './pages/Prescription';
 import RagiAdvisory from './pages/RagiAdvisory';
@@ -50,8 +51,6 @@ function App() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-base)' }}>
         <main style={{ flex: 1, position: 'relative' }}>
           <Routes>
-import Analyzing from './pages/Analyzing';
-
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/plot/new" element={<ProtectedRoute><NewPlot /></ProtectedRoute>} />

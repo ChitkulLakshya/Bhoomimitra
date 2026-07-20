@@ -14,91 +14,104 @@ export const analyzeCard = async (base64Image, onProgress = null) => {
     ];
 
     for (const modelName of modelsToTry) {
-      try {
-        if (typeof onProgress === 'function') {
-          onProgress({ stage: 'ai', progress: 0.3, message: `Analyzing Soil Card with ${modelName}...` });
-        }
+        let attempts = 0;
+        let success = false;
+        
+        while (attempts < 2 && !success) {
+          try {
+            if (typeof onProgress === 'function') {
+              onProgress({ stage: 'ai', progress: 0.3, message: `Analyzing Soil Card with ${modelName}... (Attempt ${attempts + 1})` });
+            }
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              generationConfig: { responseMimeType: "application/json" },
-              contents: [
-                {
-                  parts: [
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  generationConfig: { responseMimeType: "application/json" },
+                  contents: [
                     {
-                      text: `Analyze this Soil Health Card image carefully. Extract all soil health values exactly. The image contains a table with "Soil Test Results". You must find the numbers for: "pH" -> map to "ph", "EC" -> map to "ec", "Organic Carbon (OC)" -> map to "organic_carbon", "Available Nitrogen (N)" -> map to "nitrogen", "Available Phosphorus (P)" -> map to "phosphorus", "Available Potassium (K)" -> map to "potassium". Also generate custom daily activity plans for the farmer based on the soil conditions. Provide exact recommendations on how much fertilizers and manure to use, chemical timing, capacity, quantity, and for how many days.
-Return ONLY a valid JSON object matching this schema:
-{
-  "ph": number or null,
-  "nitrogen": number or null,
-  "phosphorus": number or null,
-  "potassium": number or null,
-  "organic_carbon": number or null,
-  "ec": number or null,
-  "recommendations": ["short actionable advice 1", "short advice 2"],
-  "detailed_daily_activities": [
+                      parts: [
+                        {
+                          text: `Analyze this Soil Health Card image carefully. Extract all soil health values exactly. The image contains a table with "Soil Test Results". You must find the numbers for: "pH" -> map to "ph", "EC" -> map to "ec", "Organic Carbon (OC)" -> map to "organic_carbon", "Available Nitrogen (N)" -> map to "nitrogen", "Available Phosphorus (P)" -> map to "phosphorus", "Available Potassium (K)" -> map to "potassium". Also generate custom daily activity plans for the farmer based on the soil conditions. Provide exact recommendations on how much fertilizers and manure to use, chemical timing, capacity, quantity, and for how many days.
+    Return ONLY a valid JSON object matching this schema:
     {
-      "id": "act_1",
-      "name": "Activity Name (e.g. Eco-Compost Boost or Urea Application)",
-      "summary": "Short dosage summary",
-      "img": "/compost_sack.png",
-      "timing": "Recommended time of day",
-      "quantity_per_acre": "Exact quantity (e.g. 50kg or 2 Liters)",
-      "duration_days": "Number of days or frequency (e.g. 3 Days or Once every 15 days)",
-      "dosageDetail": "Detailed instruction and dosage per acre",
-      "steps": [
-        { "id": "s1", "label": "Step 1 instruction" }
-      ],
-      "info": {
-        "why": "Why this specific activity is required",
-        "stageGuide": "Recommended growth stage",
-        "diyRecipe": "DIY recipe or formulation info",
-        "precautions": "Important safety or environmental precautions"
-      }
-    }
-  ]
-}`
-                    },
-                    {
-                      inlineData: {
-                        mimeType: 'image/jpeg',
-                        data: base64Image
-                      }
+      "ph": number or null,
+      "nitrogen": number or null,
+      "phosphorus": number or null,
+      "potassium": number or null,
+      "organic_carbon": number or null,
+      "ec": number or null,
+      "recommendations": ["short actionable advice 1", "short advice 2"],
+      "detailed_daily_activities": [
+        {
+          "id": "act_1",
+          "name": "Activity Name (e.g. Eco-Compost Boost or Urea Application)",
+          "summary": "Short dosage summary",
+          "img": "/compost_sack.png",
+          "timing": "Recommended time of day",
+          "quantity_per_acre": "Exact quantity (e.g. 50kg or 2 Liters)",
+          "duration_days": "Number of days or frequency (e.g. 3 Days or Once every 15 days)",
+          "dosageDetail": "Detailed instruction and dosage per acre",
+          "steps": [
+            { "id": "s1", "label": "Step 1 instruction" }
+          ],
+          "info": {
+            "why": "Why this specific activity is required",
+            "stageGuide": "Recommended growth stage",
+            "diyRecipe": "DIY recipe or formulation info",
+            "precautions": "Important safety or environmental precautions"
+          }
+        }
+      ]
+    }`
+                        },
+                        {
+                          inlineData: {
+                            mimeType: 'image/jpeg',
+                            data: base64Image
+                          }
+                        }
+                      ]
                     }
                   ]
-                }
-              ]
-            })
+                })
+              }
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+              const parsed = JSON.parse(rawText);
+
+              if (typeof onProgress === 'function') {
+                onProgress({ stage: 'complete', progress: 1.0, message: 'Gemini Flash Analysis Complete!' });
+              }
+
+              return {
+                ...parsed,
+                confidence: {
+                  ph: parsed.ph ? 0.98 : 0,
+                  nitrogen: parsed.nitrogen ? 0.98 : 0,
+                  phosphorus: parsed.phosphorus ? 0.98 : 0,
+                  potassium: parsed.potassium ? 0.98 : 0
+                },
+                notes: `Analyzed using Gemini Flash Vision AI (${modelName}).`
+              };
+            } else if (response.status === 503 || response.status === 429) {
+              console.warn(`Gemini API returned ${response.status}. Retrying in 2 seconds...`);
+              await new Promise(r => setTimeout(r, 2000));
+              attempts++;
+            } else {
+              console.warn(`Gemini API failed with status ${response.status}`);
+              break; // Don't retry for 400 Bad Request, just try next model
+            }
+          } catch (e) {
+            console.warn(`Gemini Flash model ${modelName} failed, trying next:`, e);
+            break;
           }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          const parsed = JSON.parse(rawText);
-
-          if (typeof onProgress === 'function') {
-            onProgress({ stage: 'complete', progress: 1.0, message: 'Gemini Flash Analysis Complete!' });
-          }
-
-          return {
-            ...parsed,
-            confidence: {
-              ph: parsed.ph ? 0.98 : 0,
-              nitrogen: parsed.nitrogen ? 0.98 : 0,
-              phosphorus: parsed.phosphorus ? 0.98 : 0,
-              potassium: parsed.potassium ? 0.98 : 0
-            },
-            notes: `Analyzed using Gemini Flash Vision AI (${modelName}).`
-          };
         }
-      } catch (e) {
-        console.warn(`Gemini Flash model ${modelName} failed, trying next:`, e);
-      }
     }
   }
 

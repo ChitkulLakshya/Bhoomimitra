@@ -231,23 +231,23 @@ export default function ScanCard() {
         )}
 
         {/* Bounding Box Frame Overlay */}
-        <div style={{ 
-          width: '300px', 
-          height: '300px', 
-          border: '2px solid rgba(255,255,255,0.6)', 
-          borderRadius: '28px',
-          position: 'relative',
-          zIndex: 10,
-          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)'
-        }}>
-          {/* Corner accents */}
-          <div style={{ position: 'absolute', top: '-2px', left: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderTopLeftRadius: '28px' }}></div>
-          <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderTopRightRadius: '28px' }}></div>
-          <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderBottomLeftRadius: '28px' }}></div>
-          <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderBottomRightRadius: '28px' }}></div>
-
-
-        </div>
+        {cameraActive && (
+          <div style={{ 
+            width: '300px', 
+            height: '300px', 
+            border: '2px solid rgba(255,255,255,0.6)', 
+            borderRadius: '28px',
+            position: 'relative',
+            zIndex: 10,
+            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)'
+          }}>
+            {/* Corner accents */}
+            <div style={{ position: 'absolute', top: '-2px', left: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderTopLeftRadius: '28px' }}></div>
+            <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '32px', height: '32px', borderTop: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderTopRightRadius: '28px' }}></div>
+            <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderLeft: '4px solid #D4E157', borderBottomLeftRadius: '28px' }}></div>
+            <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '32px', height: '32px', borderBottom: '4px solid #D4E157', borderRight: '4px solid #D4E157', borderBottomRightRadius: '28px' }}></div>
+          </div>
+        )}
       </div>
 
       {/* Floating Bottom Shutter Bar */}
