@@ -145,14 +145,14 @@ export default function Inventory() {
   const displayActivities = currentActivities.length > 0 ? currentActivities : items;
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-base)', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
       
       {/* Header */}
       <div style={{ padding: '48px 24px 16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#1A1A1A', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
           <ChevronLeft size={28} />
         </button>
-        <LanguageToggle />
+        <LanguageToggle style={{ color: '#1A1A1A', border: '1px solid #EAEAEA', backgroundColor: '#F9F9F9' }} />
       </div>
 
       {/* 3D Burlap Sacks Hero Sticker */}
@@ -230,7 +230,7 @@ export default function Inventory() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ 
                         width: '52px', height: '52px', 
-                        backgroundColor: '#F5F8F2', 
+                        backgroundColor: 'var(--bg-base)', 
                         borderRadius: '18px', 
                         display: 'flex', alignItems: 'center', justifyContent: 'center', 
                         overflow: 'hidden',
