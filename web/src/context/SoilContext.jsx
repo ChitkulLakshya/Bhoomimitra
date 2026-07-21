@@ -36,8 +36,8 @@ export const SoilProvider = ({ children }) => {
         // Save all tests for profile history
         setAllSoilData(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       } else {
-        // Create dummy soil data if none exists
-        await createDummySoilTest(user.id);
+        setSoilData(null);
+        setAllSoilData([]);
       }
       setLoading(false);
     });
@@ -45,21 +45,7 @@ export const SoilProvider = ({ children }) => {
     return () => unsubscribe();
   }, [user]);
 
-  const createDummySoilTest = async (userId) => {
-    try {
-      await addDoc(collection(db, 'soil_tests'), {
-        userId,
-        ph: 6.8,
-        nitrogen: 45, // mg/kg
-        phosphorus: 20, // mg/kg
-        potassium: 110, // mg/kg
-        moisture: 'Optimal',
-        testedAt: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Error creating dummy soil test:", error);
-    }
-  };
+
 
   return (
     <SoilContext.Provider value={{ soilData, allSoilData, loading }}>
