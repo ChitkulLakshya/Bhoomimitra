@@ -252,7 +252,7 @@ export default function Inventory() {
                       style={{ 
                         width: '34px', height: '34px', 
                         borderRadius: '50%', 
-                        backgroundColor: isExpanded ? '#D4E157' : '#F5F8F2', 
+                        backgroundColor: isExpanded ? '#D4E157' : '#5C763A', 
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.3s ease'
                       }}
@@ -260,7 +260,7 @@ export default function Inventory() {
                       {isExpanded ? (
                         <ChevronDown size={20} color="#1A1A1A" />
                       ) : (
-                        <ChevronRight size={18} color="#5C763A" />
+                        <ChevronRight size={18} color="#FFFFFF" />
                       )}
                     </div>
                   </div>
