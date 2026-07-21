@@ -203,5 +203,12 @@
   "Message": "ಸಂದೇಶ",
   "Enter your message": "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ನಮೂದಿಸಿ",
   "Translate Plan": "ಪ್ಲಾನ್ ಅನ್ನು ಭಾಷಾಂತರಿಸಿ",
-  "Translating...": "ಭಾಷಾಂತರಿಸಲಾಗುತ್ತಿದೆ..."
+  "Translating...": "ಭಾಷಾಂತರಿಸಲಾಗುತ್ತಿದೆ...",
+  "Loading...": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+  "Current location": "ಪ್ರಸ್ತುತ ಸ್ಥಳ",
+  "Click to detect current location": "ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಪತ್ತೆಹಚ್ಚಲು ಕ್ಲಿಕ್ ಮಾಡಿ",
+  "Humidity": "ಆರ್ದ್ರತೆ",
+  "Precipitation": "ಮಳೆ",
+  "Pressure": "ಒತ್ತಡ",
+  "Wind": "ಗಾಳಿ"
 }
