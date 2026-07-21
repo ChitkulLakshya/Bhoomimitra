@@ -3,7 +3,7 @@ import { useAlarm } from '../context/AlarmContext';
 import { X } from 'lucide-react';
 
 const AddAlarmModal = ({ isOpen, onClose, initialTitle = '', initialDescription = '' }) => {
-  const { addAlarm } = useAlarm();
+  const { addAlarm, requestPermissions } = useAlarm();
   
   // Time state
   const [selectedHour, setSelectedHour] = useState(11);
@@ -70,6 +70,7 @@ const AddAlarmModal = ({ isOpen, onClose, initialTitle = '', initialDescription 
     }
 
     try {
+      await requestPermissions();
       await addAlarm(alarmTitle, selectedDays.join(', '), alarmTime);
       onClose();
     } catch (err) {

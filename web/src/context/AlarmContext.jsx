@@ -5,8 +5,8 @@ import { useAuth } from './AuthContext';
 
 const AlarmContext = createContext();
 
-// Simple short beep sound base64
-const beepSound = 'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+// Loud alarm clock sound from Mixkit
+const beepSound = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 export const useAlarm = () => useContext(AlarmContext);
 
@@ -131,11 +131,20 @@ export const AlarmProvider = ({ children }) => {
 
   const triggerNotification = (alarm) => {
     if (permissionsGranted && 'Notification' in window) {
-      // Play sound
+      // Play sound and loop it
       if (!audioRef.current) {
         audioRef.current = new Audio(beepSound);
       }
+      audioRef.current.loop = true;
       audioRef.current.play().catch(e => console.log('Failed to play alarm sound', e));
+
+      // Stop alarm after 10 seconds
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+      }, 10000);
 
       // Show native notification
       new Notification(`Alarm: ${alarm.title}`, {
