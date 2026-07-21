@@ -69,7 +69,7 @@ export const analyzeCard = async (base64Image, onProgress = null, language = 'en
               }
 
               const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-              let groqData = { recommendations: [], detailed_daily_activities: [] };
+              let groqData = { recommendations_en: [], recommendations_kn: [], detailed_daily_activities_en: [], detailed_daily_activities_kn: [] };
               
               try {
                 const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -85,11 +85,12 @@ export const analyzeCard = async (base64Image, onProgress = null, language = 'en
                       {
                         role: 'system',
                         content: `You are an expert agronomist AI. Given soil numeric values, generate exact recommendations and deterministic daily activity plans.
-CRITICAL INSTRUCTION: You MUST translate all generated text strings (recommendations, activity names, summaries, dosage details, steps, info) strictly into the language code: "${language}". Keep JSON keys in English, but translate the values.
+CRITICAL INSTRUCTION: You MUST generate the exact same plan in BOTH English and Kannada simultaneously.
 Return ONLY a valid JSON object matching this schema:
 {
-  "recommendations": ["short actionable advice 1", "short advice 2"],
-  "detailed_daily_activities": [
+  "recommendations_en": ["short actionable advice 1", "short advice 2"],
+  "recommendations_kn": ["ಕನ್ನಡದಲ್ಲಿ ಸಲಹೆ 1", "ಸಲಹೆ 2"],
+  "detailed_daily_activities_en": [
     {
       "id": "act_1",
       "name": "Activity Name (e.g. Eco-Compost Boost or Urea Application)",
@@ -107,6 +108,27 @@ Return ONLY a valid JSON object matching this schema:
         "stageGuide": "Recommended growth stage",
         "diyRecipe": "DIY recipe or formulation info",
         "precautions": "Important safety or environmental precautions"
+      }
+    }
+  ],
+  "detailed_daily_activities_kn": [
+    {
+      "id": "act_1",
+      "name": "ಕನ್ನಡದಲ್ಲಿ ಚಟುವಟಿಕೆಯ ಹೆಸರು",
+      "summary": "ಕನ್ನಡದಲ್ಲಿ ಸಾರಾಂಶ",
+      "img": "/compost_sack.png",
+      "timing": "ಸಮಯ",
+      "quantity_per_acre": "ಪ್ರಮಾಣ",
+      "duration_days": "ಅವಧಿ",
+      "dosageDetail": "ವಿವರವಾದ ಸೂಚನೆ",
+      "steps": [
+        { "id": "s1", "label": "ಹಂತ 1 ರ ಸೂಚನೆ" }
+      ],
+      "info": {
+        "why": "ಏಕೆ ಬೇಕು",
+        "stageGuide": "ಬೆಳವಣಿಗೆಯ ಹಂತ",
+        "diyRecipe": "ಮಾಡುವ ವಿಧಾನ",
+        "precautions": "ಮುನ್ನೆಚ್ಚರಿಕೆಗಳು"
       }
     }
   ]
@@ -179,47 +201,3 @@ export const generatePrescription = async (plot, reading) => {
   return { raw_data: buildRagiPlan(plot, reading) };
 };
 
-export const translatePlan = async (soilData, targetLanguage) => {
-  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-  if (!groqApiKey) return soilData;
-
-  const dataToTranslate = {
-    recommendations: soilData.recommendations,
-    detailed_daily_activities: soilData.detailed_daily_activities
-  };
-
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama3-70b-8192',
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert agronomist AI translator. You will receive a JSON object containing agricultural recommendations and activities.
-CRITICAL INSTRUCTION: You MUST translate all text strings strictly into the language code: "${targetLanguage}". Keep JSON keys exactly the same in English, but translate the values. Maintain the exact JSON schema provided.
-Return ONLY the translated JSON object.`
-          },
-          {
-            role: 'user',
-            content: JSON.stringify(dataToTranslate)
-          }
-        ]
-      })
-    });
-
-    if (response.ok) {
-      const resData = await response.json();
-      const translated = JSON.parse(resData.choices[0].message.content);
-      return { ...soilData, ...translated };
-    }
-  } catch (err) {
-    console.error("Failed to translate plan with Groq:", err);
-  }
-  return soilData;
-};

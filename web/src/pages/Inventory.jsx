@@ -7,7 +7,6 @@ import AddAlarmModal from '../components/AddAlarmModal';
 import { useSoil } from '../context/SoilContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { translatePlan } from '../utils/ai';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -15,7 +14,6 @@ export default function Inventory() {
   const { soilData } = useSoil();
 
   const [expandedId, setExpandedId] = useState(null);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [checkedSteps, setCheckedSteps] = useState({});
   const [alarmModalOpen, setAlarmModalOpen] = useState(false);
   const [selectedAlarmData, setSelectedAlarmData] = useState({ title: '', description: '' });
@@ -42,24 +40,6 @@ export default function Inventory() {
     e.stopPropagation();
     setSelectedAlarmData({ title, description });
     setAlarmModalOpen(true);
-  };
-
-  const handleTranslate = async () => {
-    if (!soilData || !soilData.id) return;
-    setIsTranslating(true);
-    try {
-      const translatedData = await translatePlan(soilData, i18n.language);
-      if (translatedData !== soilData) {
-        const soilRef = doc(db, 'soil_tests', soilData.id);
-        await updateDoc(soilRef, {
-          recommendations: translatedData.recommendations,
-          detailed_daily_activities: translatedData.detailed_daily_activities
-        });
-      }
-    } catch (err) {
-      console.error("Translation failed", err);
-    }
-    setIsTranslating(false);
   };
 
   const items = [
@@ -159,12 +139,17 @@ export default function Inventory() {
     }
   ];
 
+  const langSuffix = i18n.language === 'kn' ? '_kn' : '_en';
+  const currentRecommendations = soilData?.[`recommendations${langSuffix}`] || soilData?.recommendations || [];
+  const currentActivities = soilData?.[`detailed_daily_activities${langSuffix}`] || soilData?.detailed_daily_activities || [];
+  const displayActivities = currentActivities.length > 0 ? currentActivities : items;
+
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
+    <div style={{ backgroundColor: 'var(--bg-base)', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
       
       {/* Header */}
       <div style={{ padding: '48px 24px 16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#1A1A1A', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
           <ChevronLeft size={28} />
         </button>
         <LanguageToggle />
@@ -199,28 +184,11 @@ export default function Inventory() {
                   {t('AI Recommendations')}
                 </span>
               </div>
-              <button 
-                onClick={handleTranslate}
-                disabled={isTranslating}
-                style={{ 
-                  backgroundColor: isTranslating ? '#CCC' : '#5C763A', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '12px', 
-                  padding: '6px 12px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '700', 
-                  cursor: isTranslating ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}
-              >
-                {isTranslating ? t('Translating...') : t('Translate Plan')}
-              </button>
             </div>
-            {soilData.recommendations && soilData.recommendations.length > 0 ? (
+            {currentRecommendations && currentRecommendations.length > 0 ? (
               <ul style={{ margin: 0, paddingLeft: '20px', color: '#333', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                {soilData.recommendations.map((rec, i) => (
-                  <li key={i}>{rec}</li>
+                {currentRecommendations.map((rec, i) => (
+                  <li key={i}>{t(rec)}</li>
                 ))}
               </ul>
             ) : (
@@ -245,7 +213,7 @@ export default function Inventory() {
           boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
         }}>
 
-          {(soilData?.detailed_daily_activities?.length > 0 ? soilData.detailed_daily_activities : items).map((item, index) => {
+          {displayActivities.map((item, index) => {
             const isExpanded = expandedId === item.id;
             return (
               <React.Fragment key={item.id}>
@@ -271,9 +239,9 @@ export default function Inventory() {
                         <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                       <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#1A1A1A', margin: '0 0 4px 0' }}>{item.name}</h4>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#1A1A1A', margin: '0 0 4px 0' }}>{t(item.name)}</h4>
                         <p style={{ fontSize: '0.82rem', color: '#667757', margin: 0, fontWeight: '500' }}>
-                          {item.summary}
+                          {t(item.summary)}
                         </p>
                       </div>
                     </div>
@@ -315,7 +283,7 @@ export default function Inventory() {
                           <span>Detailed Instruction & Dosage</span>
                         </div>
                         <p style={{ fontSize: '0.85rem', color: '#333', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                          {item.dosageDetail}
+                          {t(item.dosageDetail)}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#555' }}>
                           <Clock size={13} color="#5C763A" />
@@ -355,7 +323,7 @@ export default function Inventory() {
                                   <Square size={18} color="#CCC" style={{ flexShrink: 0, marginTop: '2px' }} />
                                 )}
                                 <span style={{ fontSize: '0.82rem', color: isChecked ? '#999' : '#1A1A1A', textDecoration: isChecked ? 'line-through' : 'none', lineHeight: '1.4' }}>
-                                  {step.label}
+                                  {t(step.label)}
                                 </span>
                               </div>
                             );
@@ -388,7 +356,7 @@ export default function Inventory() {
                         </button>
 
                         <button 
-                          onClick={(e) => openAlarm(`Apply ${item.name}`, item.dosageDetail, e)}
+                          onClick={(e) => openAlarm(`Apply ${t(item.name)}`, t(item.dosageDetail), e)}
                           style={{
                             flex: 1,
                             backgroundColor: '#D4E157',
@@ -437,23 +405,23 @@ export default function Inventory() {
             <h3 style={{ fontSize: '1.3rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '16px' }}>{selectedInfoData.name} Guide</h3>
             
             <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>Why it's essential</h4>
-              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{selectedInfoData.info.why}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>{t("Why it's essential")}</h4>
+              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{t(selectedInfoData.info.why)}</p>
             </div>
             
             <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>Stage Guide</h4>
-              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{selectedInfoData.info.stageGuide}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>{t('Stage Guide')}</h4>
+              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{t(selectedInfoData.info.stageGuide)}</p>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>DIY Recipe</h4>
-              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{selectedInfoData.info.diyRecipe}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>{t('DIY Recipe')}</h4>
+              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{t(selectedInfoData.info.diyRecipe)}</p>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>Precautions</h4>
-              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{selectedInfoData.info.precautions}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>{t('Precautions')}</h4>
+              <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{t(selectedInfoData.info.precautions)}</p>
             </div>
             
             <button onClick={() => setInfoModalOpen(false)} style={{ width: '100%', backgroundColor: '#D4E157', color: '#1A1A1A', borderRadius: '16px', padding: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', marginTop: '8px' }}>Close Guide</button>
