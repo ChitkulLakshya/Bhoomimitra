@@ -9,15 +9,15 @@ export const useSoil = () => useContext(SoilContext);
 
 export const SoilProvider = ({ children }) => {
   const { user } = useAuth();
-  const [soilData, setSoilData] = useState(null);
   const [allSoilData, setAllSoilData] = useState([]);
+  const [activeSoilTestId, setActiveSoilTestId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch soil data from Firestore
   useEffect(() => {
     if (!user) {
-      setSoilData(null);
       setAllSoilData([]);
+      setActiveSoilTestId(null);
       setLoading(false);
       return;
     }
@@ -27,16 +27,10 @@ export const SoilProvider = ({ children }) => {
       where('userId', '==', user.id)
     );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
-        // Just take the most recent soil test (assuming sorted or just one active) for soilData
-        const doc = snapshot.docs[0];
-        setSoilData({ id: doc.id, ...doc.data() });
-        
-        // Save all tests for profile history
         setAllSoilData(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       } else {
-        setSoilData(null);
         setAllSoilData([]);
       }
       setLoading(false);
@@ -45,10 +39,12 @@ export const SoilProvider = ({ children }) => {
     return () => unsubscribe();
   }, [user]);
 
-
+  const soilData = activeSoilTestId 
+    ? allSoilData.find(d => d.id === activeSoilTestId) || allSoilData[0] || null
+    : allSoilData[0] || null;
 
   return (
-    <SoilContext.Provider value={{ soilData, allSoilData, loading }}>
+    <SoilContext.Provider value={{ soilData, allSoilData, loading, setActiveSoilTestId }}>
       {children}
     </SoilContext.Provider>
   );

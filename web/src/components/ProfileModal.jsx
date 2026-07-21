@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const ProfileModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const { allSoilData } = useSoil();
+  const { allSoilData, soilData, setActiveSoilTestId } = useSoil();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -112,16 +112,26 @@ const ProfileModal = ({ isOpen, onClose }) => {
           {allSoilData && allSoilData.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
               {allSoilData.map((card, idx) => (
-                <div key={card.id || idx} style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '16px',
-                  padding: '16px',
-                  border: '1px solid #EBF1E5',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
+                <div 
+                  key={card.id || idx} 
+                  onClick={() => {
+                    setActiveSoilTestId(card.id);
+                    onClose();
+                    navigate('/');
+                  }}
+                  style={{
+                    backgroundColor: soilData?.id === card.id ? '#F0F5EC' : '#FFFFFF',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    border: soilData?.id === card.id ? '2px solid #5C763A' : '1px solid #EBF1E5',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
                   <div>
                     <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1A1A1A', marginBottom: '4px' }}>
                       {t('Soil Test Record')} #{idx + 1}
