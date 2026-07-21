@@ -379,17 +379,6 @@ export default function Inventory() {
               </React.Fragment>
             );
           })}
-
-          {/* Bottom Link matching image */}
-          <div style={{ textAlign: 'center', paddingTop: '16px' }}>
-            <button 
-              onClick={() => navigate('/compare-paths')} 
-              style={{ background: 'none', border: 'none', color: '#D4E157', fontWeight: '600', fontSize: '0.9rem', cursor: 'pointer' }}
-            >
-              Compare with Path B inputs &rarr;
-            </button>
-          </div>
-
         </div>
       </div>
 

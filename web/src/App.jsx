@@ -15,7 +15,6 @@ import Prescription from './pages/Prescription';
 import RagiAdvisory from './pages/RagiAdvisory';
 import Diagnostics from './pages/Diagnostics';
 import Inventory from './pages/Inventory';
-import PathComparison from './pages/PathComparison';
 import Community from './pages/Community';
 
 const ProtectedRoute = ({ children }) => {
@@ -62,7 +61,6 @@ function App() {
             <Route path="/diagnostics" element={<ProtectedRoute><Diagnostics /></ProtectedRoute>} />
             <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             <Route path="/activity" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-            <Route path="/compare-paths" element={<ProtectedRoute><PathComparison /></ProtectedRoute>} />
             <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
