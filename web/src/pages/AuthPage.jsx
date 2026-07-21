@@ -174,7 +174,7 @@ export default function AuthPage() {
             marginBottom: '6px',
             letterSpacing: '-0.5px'
           }}>
-            {t('Hello, Farmer Login 👋')}
+            {t('Welcome 👋')}
           </h1>
           <p style={{
             fontSize: '0.9rem',
@@ -363,57 +363,7 @@ export default function AuthPage() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          margin: '22px 0',
-          color: '#A2B392',
-          fontSize: '0.78rem',
-          fontWeight: '700',
-          textTransform: 'uppercase',
-          letterSpacing: '1px'
-        }}>
-          <div style={{ flex: 1, height: '1px', backgroundColor: '#EBF1E5' }} />
-          <span>OR</span>
-          <div style={{ flex: 1, height: '1px', backgroundColor: '#EBF1E5' }} />
-        </div>
 
-        {/* Secondary Outlined Scan Button with Camera Icon */}
-        <button
-          type="button"
-          onClick={() => navigate('/scan')}
-          style={{
-            width: '100%',
-            backgroundColor: '#FFFFFF',
-            color: '#3B532B',
-            border: '2px solid #546E3F',
-            borderRadius: '20px',
-            padding: '14px 20px',
-            fontSize: '0.98rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 4px 12px rgba(84, 110, 63, 0.05)'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = '#F4F8F0';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFFFFF';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <Camera size={20} color="#3B532B" />
-          <span>{t('Or Quick-Scan to Login with Soil Card')}</span>
-        </button>
 
       </div>
 
