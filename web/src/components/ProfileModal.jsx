@@ -2,12 +2,12 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSoil } from '../context/SoilContext';
 import { useTranslation } from 'react-i18next';
-import { X, Phone, User, Sprout, Briefcase, TrendingUp, Truck, ShieldCheck, FileText } from 'lucide-react';
+import { X, Phone, User, Sprout, Briefcase, TrendingUp, Truck, ShieldCheck, FileText, Trash2, PhoneCall } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ProfileModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const { allSoilData, soilData, setActiveSoilTestId } = useSoil();
+  const { allSoilData, soilData, setActiveSoilTestId, deleteSoilTest } = useSoil();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -95,12 +95,35 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#F9FBF7', padding: '6px 12px', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#F9FBF7', padding: '6px 12px', borderRadius: '16px', marginBottom: '16px' }}>
               <Phone size={16} color="#667757" />
               <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#667757', letterSpacing: '0.5px' }}>
                 +91 {user?.phone || '9876543210'}
               </span>
             </div>
+            
+            {/* Kisan Call Center Button */}
+            <a href="tel:18001801551" style={{ textDecoration: 'none', width: '100%' }}>
+              <button style={{
+                width: '100%',
+                backgroundColor: '#5C763A',
+                color: 'white',
+                border: 'none',
+                borderRadius: '16px',
+                padding: '12px',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(92, 118, 58, 0.2)'
+              }}>
+                <PhoneCall size={18} />
+                {t('Kisan Helpline: 1800-180-1551')}
+              </button>
+            </a>
           </div>
 
           {/* Soil Cards Section */}
@@ -140,8 +163,24 @@ const ProfileModal = ({ isOpen, onClose }) => {
                       pH: {card.ph} | N: {card.nitrogen} | P: {card.phosphorus} | K: {card.potassium}
                     </div>
                   </div>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F0F5EC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Sprout size={18} color="#5C763A" />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F0F5EC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Sprout size={18} color="#5C763A" />
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSoilTest(card.id);
+                      }}
+                      style={{
+                        width: '36px', height: '36px', borderRadius: '50%', 
+                        backgroundColor: '#FFF0F0', border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'background-color 0.2s'
+                      }}
+                    >
+                      <Trash2 size={18} color="#D32F2F" />
+                    </button>
                   </div>
                 </div>
               ))}

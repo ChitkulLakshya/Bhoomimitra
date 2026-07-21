@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 
@@ -43,8 +43,19 @@ export const SoilProvider = ({ children }) => {
     ? allSoilData.find(d => d.id === activeSoilTestId) || allSoilData[0] || null
     : allSoilData[0] || null;
 
+  const deleteSoilTest = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'soil_tests', id));
+      if (activeSoilTestId === id) {
+        setActiveSoilTestId(null);
+      }
+    } catch (error) {
+      console.error("Error deleting soil test:", error);
+    }
+  };
+
   return (
-    <SoilContext.Provider value={{ soilData, allSoilData, loading, setActiveSoilTestId }}>
+    <SoilContext.Provider value={{ soilData, allSoilData, loading, setActiveSoilTestId, deleteSoilTest }}>
       {children}
     </SoilContext.Provider>
   );
