@@ -11,6 +11,7 @@ import AddAlarmModal from '../components/AddAlarmModal';
 import WeatherWidget from '../components/WeatherWidget';
 import InlineAlarmCard from '../components/InlineAlarmCard';
 import ProfileModal from '../components/ProfileModal';
+import SavedAlarmsList from '../components/SavedAlarmsList';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -167,6 +168,9 @@ export default function Dashboard() {
 
         {/* Custom Green Alarm Interface Card */}
         <InlineAlarmCard />
+
+        {/* List of Saved Alarms (Toggles & Delete) */}
+        <SavedAlarmsList />
 
         {/* Action Buttons */}
         <div style={{ marginTop: '32px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

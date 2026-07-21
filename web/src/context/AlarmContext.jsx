@@ -79,6 +79,9 @@ export const AlarmProvider = ({ children }) => {
       const now = new Date();
       
       alarms.forEach(async (alarm) => {
+        // Skip disabled alarms
+        if (alarm.enabled === false) return;
+
         if (!alarm.triggered && alarm.time && typeof alarm.time.toDate === 'function') {
           const alarmTime = alarm.time.toDate();
           
@@ -169,6 +172,7 @@ export const AlarmProvider = ({ children }) => {
         repeatEnabled,
         selectedDays,
         triggered: false,
+        enabled: true,
         createdAt: serverTimestamp()
       });
     } catch (error) {
@@ -177,8 +181,24 @@ export const AlarmProvider = ({ children }) => {
     }
   };
 
+  const deleteAlarm = async (alarmId) => {
+    try {
+      await deleteDoc(doc(db, 'alarms', alarmId));
+    } catch (error) {
+      console.error("Error deleting alarm:", error);
+    }
+  };
+
+  const toggleAlarm = async (alarmId, currentEnabled) => {
+    try {
+      await updateDoc(doc(db, 'alarms', alarmId), { enabled: !currentEnabled });
+    } catch (error) {
+      console.error("Error toggling alarm:", error);
+    }
+  };
+
   return (
-    <AlarmContext.Provider value={{ alarms, addAlarm, requestPermissions, permissionsGranted }}>
+    <AlarmContext.Provider value={{ alarms, addAlarm, deleteAlarm, toggleAlarm, requestPermissions, permissionsGranted }}>
       {children}
     </AlarmContext.Provider>
   );
