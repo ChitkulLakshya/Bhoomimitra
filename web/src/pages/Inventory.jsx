@@ -160,7 +160,7 @@ export default function Inventory() {
   ];
 
   return (
-    <div style={{ backgroundColor: '#FDFDFD', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingBottom: '40px', color: '#1A1A1A' }}>
       
       {/* Header */}
       <div style={{ padding: '48px 24px 16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
