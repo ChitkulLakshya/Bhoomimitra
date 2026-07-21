@@ -246,7 +246,11 @@ export default function AuthPage() {
                   fontSize: '1.05rem',
                   fontWeight: '700',
                   padding: '10px 0',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
+                  minWidth: 0,
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden'
                 }}
               />
               <Sparkles size={20} color="#8A9E79" />
@@ -312,7 +316,11 @@ export default function AuthPage() {
                   fontSize: '1.05rem',
                   fontWeight: '700',
                   padding: '10px 0',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
+                  minWidth: 0,
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden'
                 }}
               />
               <Smartphone size={20} color="#8A9E79" />
