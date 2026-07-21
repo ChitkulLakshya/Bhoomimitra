@@ -17,7 +17,7 @@ const InlineAlarmCard = () => {
   const [selectedDays, setSelectedDays] = useState(['Tuesday', 'Friday']);
   const [ringtone, setRingtone] = useState('Morning Scent');
   const [vibrateEnabled, setVibrateEnabled] = useState(false);
-  const [message, setMessage] = useState('Ragi crop hand-weeding');
+  const [message, setMessage] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Time manipulation helpers
@@ -67,7 +67,7 @@ const InlineAlarmCard = () => {
   };
 
   const handleSave = async () => {
-    const alarmTitle = message || 'Crop Task Alarm';
+    const alarmTitle = message || t('Ragi crop hand-weeding');
     let hour24 = selectedHour;
     if (selectedAmpm === 'PM' && selectedHour < 12) hour24 += 12;
     if (selectedAmpm === 'AM' && selectedHour === 12) hour24 = 0;
@@ -332,7 +332,7 @@ const InlineAlarmCard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#555' }}>{t('Message')}</span>
           <input 
-            value={message}
+            value={message || t('Ragi crop hand-weeding')}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={t('Enter your message')}
             style={{

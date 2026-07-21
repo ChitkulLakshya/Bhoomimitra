@@ -178,3 +178,48 @@ export const scanSoil = async (base64Image, crop) => {
 export const generatePrescription = async (plot, reading) => {
   return { raw_data: buildRagiPlan(plot, reading) };
 };
+
+export const translatePlan = async (soilData, targetLanguage) => {
+  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+  if (!groqApiKey) return soilData;
+
+  const dataToTranslate = {
+    recommendations: soilData.recommendations,
+    detailed_daily_activities: soilData.detailed_daily_activities
+  };
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${groqApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama3-70b-8192',
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert agronomist AI translator. You will receive a JSON object containing agricultural recommendations and activities.
+CRITICAL INSTRUCTION: You MUST translate all text strings strictly into the language code: "${targetLanguage}". Keep JSON keys exactly the same in English, but translate the values. Maintain the exact JSON schema provided.
+Return ONLY the translated JSON object.`
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(dataToTranslate)
+          }
+        ]
+      })
+    });
+
+    if (response.ok) {
+      const resData = await response.json();
+      const translated = JSON.parse(resData.choices[0].message.content);
+      return { ...soilData, ...translated };
+    }
+  } catch (err) {
+    console.error("Failed to translate plan with Groq:", err);
+  }
+  return soilData;
+};

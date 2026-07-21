@@ -43,7 +43,22 @@ export default function Dashboard() {
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Top utility bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '16px 24px 0 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 0 24px' }}>
+          {/* User Profile Thumbnail */}
+          <div 
+            onClick={() => setIsProfileModalOpen(true)}
+            style={{
+              width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', border: '2px solid white',
+              cursor: 'pointer', transition: 'transform 0.2s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <img src="/expert_avatar.png" alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+
           <LanguageToggle style={{ color: '#1A1A1A', border: '1px solid rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)' }} />
         </div>
 
