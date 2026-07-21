@@ -116,7 +116,7 @@ const WeatherWidget = () => {
       <div style={{ width: '100%', height: '1px', borderBottom: '2px dashed #EAEAEA', margin: '24px 0' }}></div>
 
       {/* 4 Column Data Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'left', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'left', marginBottom: '0' }}>
         <div>
           <div style={{ color: '#888', fontSize: '0.8rem', marginBottom: '4px' }}>{t('Humidity')}</div>
           <div style={{ color: '#1A1A1A', fontSize: '0.9rem', fontWeight: '700' }}>{humidity}</div>
@@ -135,41 +135,7 @@ const WeatherWidget = () => {
         </div>
       </div>
 
-      {/* Sun Trajectory Arc */}
-      <div style={{ position: 'relative', height: '80px', width: '100%' }}>
-        <svg width="100%" height="100%" viewBox="0 0 300 80" preserveAspectRatio="none">
-          {/* Dashed arc path */}
-          <path 
-            d="M 10 70 Q 150 -10 290 70" 
-            fill="none" 
-            stroke="#CCC" 
-            strokeWidth="2" 
-            strokeDasharray="6 6"
-          />
-        </svg>
-        {/* Sun Icon positioned on the arc */}
-        <div style={{ 
-          position: 'absolute', 
-          top: '15px', 
-          left: '60%', 
-          transform: 'translate(-50%, -50%)',
-          width: '24px',
-          height: '24px',
-          backgroundColor: '#FFD166',
-          borderRadius: '50%',
-          boxShadow: '0 0 10px 4px rgba(255, 209, 102, 0.4)'
-        }}></div>
 
-        {/* Sunrise/Sunset times */}
-        <div style={{ position: 'absolute', bottom: '0', left: '0', textAlign: 'left' }}>
-          <div style={{ color: '#1A1A1A', fontWeight: '700', fontSize: '0.85rem' }}>{sunrise}</div>
-          <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('Sunrise')}</div>
-        </div>
-        <div style={{ position: 'absolute', bottom: '0', right: '0', textAlign: 'right' }}>
-          <div style={{ color: '#1A1A1A', fontWeight: '700', fontSize: '0.85rem' }}>{sunset}</div>
-          <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('Sunset')}</div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -173,7 +173,7 @@ export default function Inventory() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sparkles size={18} color="#D4E157" />
               <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#D4E157', letterSpacing: '0.3px' }}>
-                {t('Gemini Flash AI Recommendations')}
+                {t('AI Recommendations')}
               </span>
             </div>
             {soilData.recommendations && soilData.recommendations.length > 0 ? (
