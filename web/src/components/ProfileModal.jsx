@@ -193,10 +193,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '4px' }}>
-                  B2B Marketplace <span style={{ fontSize: '0.65rem', backgroundColor: '#EBF1E5', color: '#5C763A', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>COMING SOON</span>
+                  {t('B2B Marketplace')} <span style={{ fontSize: '0.65rem', backgroundColor: '#EBF1E5', color: '#5C763A', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>{t('COMING SOON')}</span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#667757', lineHeight: '1.4' }}>
-                  Connect directly with bulk buyers, distributors, and food processing companies to sell your harvest at premium rates.
+                  {t('Connect directly with bulk buyers, distributors, and food processing companies to sell your harvest at premium rates.')}
                 </div>
               </div>
             </div>
@@ -216,10 +216,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '4px' }}>
-                  Farm-to-Gate Logistics <span style={{ fontSize: '0.65rem', backgroundColor: '#FFFDE6', color: '#D4B200', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>Q4 2026</span>
+                  {t('Farm-to-Gate Logistics')} <span style={{ fontSize: '0.65rem', backgroundColor: '#FFFDE6', color: '#D4B200', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>{t('Q4 2026')}</span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#667757', lineHeight: '1.4' }}>
-                  Integrated truck booking and cold-chain supply management right from your farm to the buyer.
+                  {t('Integrated truck booking and cold-chain supply management right from your farm to the buyer.')}
                 </div>
               </div>
             </div>
@@ -239,10 +239,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '4px' }}>
-                  Premium AI Advisory <span style={{ fontSize: '0.65rem', backgroundColor: '#EBF1E5', color: '#5C763A', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>ENTERPRISE</span>
+                  {t('Premium AI Advisory')} <span style={{ fontSize: '0.65rem', backgroundColor: '#EBF1E5', color: '#5C763A', padding: '2px 6px', borderRadius: '8px', marginLeft: '6px', verticalAlign: 'middle' }}>{t('ENTERPRISE')}</span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#667757', lineHeight: '1.4' }}>
-                  Advanced satellite imagery analysis and dedicated agronomist consultations for large-scale farm operations.
+                  {t('Advanced satellite imagery analysis and dedicated agronomist consultations for large-scale farm operations.')}
                 </div>
               </div>
             </div>

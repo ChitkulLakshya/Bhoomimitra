@@ -14,7 +14,7 @@ import SavedAlarmsList from '../components/SavedAlarmsList';
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -82,7 +82,7 @@ export default function Dashboard() {
           cursor: 'pointer'
         }}>
           <div style={{ fontSize: '0.95rem', color: '#8A9E79', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString(i18n.language === 'kn' ? 'kn-IN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#1A1A1A', margin: 0 }}>
             {t('Hello')}, {user?.name || 'Farmer'} 👋

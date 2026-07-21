@@ -280,25 +280,25 @@ export default function Inventory() {
                       <div style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#5C763A', fontWeight: '700', marginBottom: '4px' }}>
                           <Info size={14} />
-                          <span>Detailed Instruction & Dosage</span>
+                          <span>{t('Detailed Instruction & Dosage')}</span>
                         </div>
                         <p style={{ fontSize: '0.85rem', color: '#333', margin: '0 0 8px 0', lineHeight: '1.4' }}>
                           {t(item.dosageDetail)}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#555' }}>
                           <Clock size={13} color="#5C763A" />
-                          <span>Recommended Time: {item.timing}</span>
+                          <span>{t('Recommended Time:')} {t(item.timing)}</span>
                         </div>
                         {item.quantity_per_acre && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#555', marginTop: '4px' }}>
                             <Scale size={13} color="#5C763A" />
-                            <span>Quantity: {item.quantity_per_acre}</span>
+                            <span>{t('Quantity:')} {item.quantity_per_acre}</span>
                           </div>
                         )}
                         {item.duration_days && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#555', marginTop: '4px' }}>
                             <Calendar size={13} color="#5C763A" />
-                            <span>Duration: {item.duration_days}</span>
+                            <span>{t('Duration:')} {item.duration_days}</span>
                           </div>
                         )}
                       </div>
@@ -306,7 +306,7 @@ export default function Inventory() {
                       {/* Application Checklist */}
                       <div style={{ marginBottom: '20px' }}>
                         <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#1A1A1A', marginBottom: '10px' }}>
-                          Application Checklist:
+                          {t('Application Checklist:')}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {item.steps.map((step) => {
@@ -352,7 +352,7 @@ export default function Inventory() {
                           }}
                         >
                           <BookOpen size={16} />
-                          Know More
+                          {t('Know More')}
                         </button>
 
                         <button 
@@ -375,7 +375,7 @@ export default function Inventory() {
                           }}
                         >
                           <Bell size={16} />
-                          Set Alarm
+                          {t('Set Alarm')}
                         </button>
                       </div>
 
@@ -402,7 +402,7 @@ export default function Inventory() {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', position: 'relative', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
             <button onClick={() => setInfoModalOpen(false)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#1A1A1A', cursor: 'pointer', fontSize: '1.5rem', lineHeight: 1 }}>&times;</button>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '16px' }}>{selectedInfoData.name} Guide</h3>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: '800', color: '#1A1A1A', marginBottom: '16px' }}>{t(selectedInfoData.name)} {t('Guide')}</h3>
             
             <div style={{ marginBottom: '16px' }}>
               <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: '#5C763A', marginBottom: '4px' }}>{t("Why it's essential")}</h4>
@@ -424,7 +424,7 @@ export default function Inventory() {
               <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.4', margin: 0 }}>{t(selectedInfoData.info.precautions)}</p>
             </div>
             
-            <button onClick={() => setInfoModalOpen(false)} style={{ width: '100%', backgroundColor: '#D4E157', color: '#1A1A1A', borderRadius: '16px', padding: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', marginTop: '8px' }}>Close Guide</button>
+            <button onClick={() => setInfoModalOpen(false)} style={{ width: '100%', backgroundColor: '#D4E157', color: '#1A1A1A', borderRadius: '16px', padding: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', marginTop: '8px' }}>{t('Close Guide')}</button>
           </div>
         </div>
       )}
